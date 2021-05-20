@@ -152,6 +152,7 @@ int main() {
   Line input = ReadLine(0);
   char **string = &input.chars;
   Poly p = StrToPoly(string);
+  PolyDestroy(&p);
   free(input.chars);
   return 0;
 }
