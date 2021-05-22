@@ -7,6 +7,7 @@
 */
 
 #include <stdlib.h>
+#include <stdio.h>
 #include "poly.h"
 
 /**
@@ -558,4 +559,40 @@ Poly PolyAt(const Poly *p, poly_coeff_t x) {
     }
   }
   return res;
+}
+// zamienia wiel z samymi exp = 0 na coeff
+Poly PolySimplify(Poly *p) {
+  Poly res, *temp = p;
+  while (!PolyIsCoeff(temp) && PolyGetSize(p) == 1 && MonoGetExp(&p->arr[0]) == 0)
+    temp = &temp->arr[0].p;
+  if (PolyIsCoeff(temp)) {
+    res = PolyFromCoeff(PolyGetCoeff(temp));
+    PolyDestroy(p);
+  }
+  else {
+    res.arr = PolyGetArr(p);
+    if (PolyIsCoeff(p))
+      res.coeff = PolyGetCoeff(p);
+    else
+      res.size = PolyGetSize(p);
+  }
+  return res;
+}
+
+void PolyPrint(const Poly *p) {
+  assert(p);
+  if (PolyIsCoeff(p))
+    printf("%ld", PolyGetCoeff(p));
+  else {
+    size_t p_size = PolyGetSize(p);
+    for (size_t i = 0; i < p_size - 1; i++) {
+      printf("(");
+      PolyPrint(&p->arr[i].p);
+      printf(",%d)", MonoGetExp(&p->arr[i]));
+      printf("+");
+    }
+    printf("(");
+    PolyPrint(&p->arr[p_size - 1].p);
+    printf(",%d)", MonoGetExp(&p->arr[p_size - 1]));
+  }
 }

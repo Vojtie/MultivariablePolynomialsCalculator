@@ -251,4 +251,11 @@ Poly PolyAt(const Poly *p, poly_coeff_t x);
  */
 Poly PolyDelZeros(Poly *p);
 
+/**
+ * uzupełnić
+ */
+Poly PolySimplify(Poly *p);
+
+void PolyPrint(const Poly *p);
+
 #endif /* __POLY_H__ */
