@@ -3,6 +3,7 @@
 
 #include <stdlib.h>
 #include "poly_stack.h"
+#include "poly.h"
 #include "stdbool.h"
 
 #define DEF_STACK_SIZE 10
@@ -33,56 +34,55 @@ Stack *NewStack() {
   return res;
 }
 
-static void InreaseStack(Stack *s) {
+static void StackInrease(Stack *s) {
   assert(s);
   s->polys = realloc(s->polys, s->size * DEF_ALLOC_COEFF);
   CheckAlloc(s->polys);
   s->size *= DEF_ALLOC_COEFF;
 }
 
-bool IsFull(Stack *s) {
+static bool StackIsFull(Stack *s) {
   assert(s);
   return s->top == s->size - 1;
 }
 
-bool IsEmpty(Stack *s) {
+bool StackIsEmpty(Stack *s) {
   assert(s);
   return /*s == NULL || */s->top == -1;
 }
 
-Poly *StackPop(Stack *s) {
+Poly StackPop(Stack *s) {
   assert(s && !IsEmpty(s));
   return  &s->polys[s->top--];
 }
 
-void Push(Stack *s, Poly p) {
+void StackPush(Stack *s, Poly p) {
   assert(s && s->size > 0);
   if (IsFull(s))
     InreaseStack(s);
   s->polys[++s->top] = p;
 }
 
-Poly *PeekFirst(Stack *s) {
+Poly *StackPeekFirst(Stack *s) {
   assert(s && !IsEmpty(s));
   return &s->polys[s->top];
 }
 
-Poly *PeekSecond(Stack *s) {
+Poly *StackPeekSecond(Stack *s) {
   assert(s && !IsEmpty(s));
   return &s->polys[s->top - 1];
 }
 
-size_t GetNumberOfPolys(Stack *s) {
+size_t StackNumberOfPolys(Stack *s) {
   assert(s);
   return s->top + 1;
 }
 
-void StackDelTop(Stack *s) {
-  assert(s);
-  PolyDestroy(StackPop(s));
-}
-// uzupełnić
 void StackFree(Stack *s) {
+  while (!StackIsEmpty(s)) {
+    Poly p = StackPop(s);
+    PolyDestroy(&p);
+  }
   free(s->polys);
   free(s);
 }

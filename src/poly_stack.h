@@ -7,22 +7,19 @@ typedef struct Stack {
     long size;
 } Stack;
 
-
 Stack *NewStack();
 
-Poly *PeekFirst(Stack *s);
+Poly *StackPeekFirst(Stack *s);
 
-Poly *PeekSecond(Stack *s);
+Poly *StackPeekSecond(Stack *s);
 
-bool IsFull(Stack *s);
+Poly StackPop(Stack *s);
 
-static Poly *StackPop(Stack *s);
+bool StackIsEmpty(Stack *s);
 
-bool IsEmpty(Stack *s);
+void StackPush(Stack *s, Poly p);
 
-void Push(Stack *s, Poly p);
-
-size_t GetNumberOfPolys(Stack *s);
+size_t StackNumberOfPolys(Stack *s);
 
 void StackFree(Stack *s);
 

@@ -48,34 +48,14 @@ typedef enum Error {
     WR_POLY, WR_COMMAND, WR_DEG_BY_VAR, WR_AT_VAL, ST_UND
 } Error;
 */
-void PrintError(size_t line_num, Error error_type) {
-  switch (error_type) {
-    case WR_POLY:
-      fprintf(stderr, "ERROR %zu WRONG POLY\n", line_num);
-      break;
-    case WR_COMMAND:
-      fprintf(stderr, "ERROR %zu WRONG COMMAND\n", line_num);
-      break;
-    case WR_DEG_BY_VAR:
-      fprintf(stderr, "ERROR %zu DEG BY WRONG VARIABLE\n", line_num);
-      break;
-    case WR_AT_VAL:
-      fprintf(stderr, "ERROR %zu AT WRONG VALUE\n", line_num);
-      break;
-    case ST_UND:
-      fprintf(stderr, "ERROR %zu STACK UNDERFLOW\n", line_num);
-      break;
-    default:
-      break;
-  }
-}
+
 /**
 typedef struct Line {
     char *chars;
     bool is_correct;
     Error error_type;
     size_t size;
-    size_t index;
+    size_t last_index;
     size_t type; // 1 - poly, 2 - operacja, 3 - pusty/ignorowany
 } Line;
 */
@@ -89,7 +69,7 @@ poly_exp_t StrToExp(char **string) {
   return strtol(*string, string, 10);
 }
 
-
+static Poly StrToPoly(char **string);
 
 static Mono StrToMono(char **string) {
   //assert(string && *string && **string == '(');
@@ -107,7 +87,7 @@ static Mono StrToMono(char **string) {
 /**
  *
  **/
-Poly StrToPoly(char **string) {
+static Poly StrToPoly(char **string) {
   assert(string && *string);
   Poly res;
   if (**string == '(') {
@@ -122,8 +102,7 @@ Poly StrToPoly(char **string) {
       }
       if (i == size)
         monos = IncreaseMemForMonos(monos, &size);
-      monos[i] = StrToMono(string);
-      i++;
+      monos[i++] = StrToMono(string);
     }
     if (i > 1) {
       res = PolyAddMonos(i, monos);
@@ -143,14 +122,14 @@ Poly StrToPoly(char **string) {
 }
 
 
-
+/*
 static Line AllocMemForLine() {
   Line res;
   res.chars = calloc(DEF_ALLOC_SIZE, sizeof res.chars);
   CheckAlloc(res.chars);
   res.size = DEF_ALLOC_SIZE;
   res.type = EMPTY_LINE;
-  res.index = 0;
+  res.last_index = 0;
   res.is_correct = true;
   res.is_eof = false;
   return res;
@@ -161,30 +140,10 @@ static void IncreaseLineSize(Line *line) {
   line->chars = realloc(line->chars, sizeof(line->chars) * line->size);
   CheckAlloc(line->chars);
 }
+*/
 
-static bool IsNumber(char ch) {
+static bool IsNumber(int ch) {
   return ch >= '0' && ch <= '9';
-}
-
-static bool IsCorrect(char last_ch, char ch) {
-  bool res = true;
-  if (!(ch == '(' || ch == ')' || ch == ',' || ch == '-' || ch == '+' || IsNumber(ch)))
-    res = false;
-  else {
-    if (last_ch == '(' && ch != '(' && !IsNumber(ch) && ch != '-')
-      res = false;
-    else if (last_ch == ',' && !IsNumber(ch) && ch != '-')
-      res = false;
-    else if (last_ch == ')' && ch != ',' && ch != '+')
-      res = false;
-    else if (last_ch == '-' && !IsNumber(ch))
-      res = false;
-    else if (IsNumber(last_ch) && !IsNumber(ch) && ch != ',' && ch != ')')
-      res = false;
-    else if (last_ch == '+' && ch != '(')
-      res = false;
-  }
-  return res;
 }
 
 static void FreeUncorrectLine(Line *line) {
@@ -192,131 +151,232 @@ static void FreeUncorrectLine(Line *line) {
   line->chars = NULL;
 }
 
-void CheckLimits(Line *line) {
-  assert(line->is_correct = true);
-  if (line->type == POLY_LINE) {
-    errno = 0;
-    char *str = line->chars;
-    if (IsNumber(str[0]) || str[0] == '-') {
-      // coeff
-      strtol(str, NULL, 10);
-      if (errno == ERANGE) {
-        line->is_correct = false;
-        line->error_type = WR_POLY;
-      }
+bool HasCorrectNumbers(char *str, size_t str_size) {
+  errno = 0;
+  bool correct = true;
+  if (IsNumber(str[0]) || str[0] == '-') {
+    strtol(str, NULL, 10);
+    if (errno == ERANGE)
+      correct = false;
+  }
+  for (size_t i = 0; correct && i < str_size - 1; i++) {
+    if (str[i] == '(' && (str[i + 1] == '-' || IsNumber(str[i + 1]))) {
+      strtol(&str[i + 1], NULL, 10);
+      if (errno == ERANGE)
+        correct = false;
     }
-    for (size_t i = 0; i < line->index - 1; i++) {
-      if (str[i] == '(' && (str[i + 1] == '-' || IsNumber(str[i + 1]))) {
-        strtol(&str[i + 1], NULL, 10);
-        if (errno == ERANGE) {
-          line->is_correct = false;
-          line->error_type = WR_POLY;
-          break;
-        }
-      }
-      else if (str[i] == ',') {
-        long exp = strtol(&str[i + 1], NULL, 10);
-        if (exp > INT_MAX || exp < 0) {
-          line->is_correct = false;
-          line->error_type = WR_POLY;
-          break;
-        }
+    else if (str[i] == ',') {
+      long exp = strtol(&str[i + 1], NULL, 10);
+      if (exp > INT_MAX || exp < 0) {
+        correct = false;
       }
     }
   }
+  return correct;
 }
 
 static deg_by_arg_t ReadDegByArg(Line *line, size_t arg_i) {
-  assert(line->is_correct = true);
+  assert(line->error_type = NONE_ERR);
   deg_by_arg_t res;
   errno = 0;
   char *endptr = NULL;
-  res = strtoul(&line->chars[arg_i], &endptr, 10);
-  if (errno == ERANGE || *endptr != '\0') {
-    line->is_correct = false;
+  res = strtoul((char *) &line->chars[arg_i], &endptr, 10);
+  if (errno == ERANGE || *endptr != '\0')
     line->error_type = WR_DEG_BY_VAR;
-  }
   return res;
 }
 
 static at_arg_t ReadAtArg(Line *line, size_t arg_i) {
-  assert(line->is_correct = true);
+  assert(line->error_type = NONE_ERR);
   at_arg_t res;
   errno = 0;
   char *endptr = NULL;
-  res = strtol(&line->chars[arg_i], &endptr, 10);
-  if (errno == ERANGE || *endptr != '\0') {
-    line->is_correct = false;
+  res = strtol((char *) &line->chars[arg_i], &endptr, 10);
+  if (errno == ERANGE || *endptr != '\0')
     line->error_type = WR_AT_VAL;
-  }
   return res;
 }
 
-Command ReadCommand(Line *line) {
+static Command ReadCommand(Line *line) {
   assert(line->type == OPER_LINE);
   Command res;
-  res.op = NONE;
-  char *oper = line->chars;
-  if (line->index == 3 && oper[0] == 'A' && oper[1] == 'D' && oper[2] == 'D' && oper[3] == '\0')
+  res.op = NONE_OP;
+  char *oper = (char *) line->chars;
+  if (line->last_index == 3 && oper[0] == 'A' && oper[1] == 'D' && oper[2] == 'D' && oper[3] == '\0')
     res.op = ADD;
-  else if (line->index == 3 && oper[0] == 'M' && oper[1] == 'U' && oper[2] == 'L' && oper[3] == '\0')
+  else if (line->last_index == 3 && oper[0] == 'M' && oper[1] == 'U' && oper[2] == 'L' && oper[3] == '\0')
     res.op = MUL;
-  else if (line->index == 3 && oper[0] == 'N' && oper[1] == 'E' && oper[2] == 'G' && oper[3] == '\0')
+  else if (line->last_index == 3 && oper[0] == 'N' && oper[1] == 'E' && oper[2] == 'G' && oper[3] == '\0')
     res.op = NEG;
-  else if (line->index == 3 && oper[0] == 'S' && oper[1] == 'U' && oper[2] == 'B' && oper[3] == '\0')
+  else if (line->last_index == 3 && oper[0] == 'S' && oper[1] == 'U' && oper[2] == 'B' && oper[3] == '\0')
     res.op = SUB;
-  else if (line->index == 3 && oper[0] == 'D' && oper[1] == 'E' && oper[2] == 'G' && oper[3] == '\0')
+  else if (line->last_index == 3 && oper[0] == 'D' && oper[1] == 'E' && oper[2] == 'G' && oper[3] == '\0')
     res.op = DEG;
-  else if (line->index == 3 && oper[0] == 'P' && oper[1] == 'O' && oper[2] == 'P' && oper[3] == '\0')
+  else if (line->last_index == 3 && oper[0] == 'P' && oper[1] == 'O' && oper[2] == 'P' && oper[3] == '\0')
     res.op = POP;
-  else if (line->index == 4 && oper[0] == 'Z' && oper[1] == 'E' && oper[2] == 'R' && oper[3] == '0' && oper[4] == '\0')
+  else if (line->last_index == 4 && oper[0] == 'Z' && oper[1] == 'E' && oper[2] == 'R' && oper[3] == '0' && oper[4] == '\0')
     res.op = ZERO;
-  else if (line->index >= 5 && oper[0] == 'I' && oper[1] == 'S' && oper[2] == '_') {
-    if (line->index == 9 && oper[3] == 'C' && oper[4] == 'O' && oper[5] == 'E' && oper[6] == 'F' && oper[7] == 'F' && oper[8] == 'O' &&
+  else if (line->last_index >= 5 && oper[0] == 'I' && oper[1] == 'S' && oper[2] == '_') {
+    if (line->last_index == 9 && oper[3] == 'C' && oper[4] == 'O' && oper[5] == 'E' && oper[6] == 'F' && oper[7] == 'F' && oper[8] == 'O' &&
         oper[9] == '\0')
       res.op = IS_COEFF;
-    else if (line->index == 7 && oper[3] == 'Z' && oper[4] == 'E' && oper[5] == 'R' && oper[6] == 'O' && oper[7] == '\0')
+    else if (line->last_index == 7 && oper[3] == 'Z' && oper[4] == 'E' && oper[5] == 'R' && oper[6] == 'O' && oper[7] == '\0')
       res.op = IS_ZERO;
-    else if (line->index == 5 && oper[3] == 'E' && oper[4] == 'Q' && oper[5] == '\0')
+    else if (line->last_index == 5 && oper[3] == 'E' && oper[4] == 'Q' && oper[5] == '\0')
       res.op = IS_EQ;
-  } else if (line->index >= 5 && oper[0] == 'D' && oper[1] == 'E' && oper[2] == 'G' && oper[3] == '_' && oper[4] == 'B' && oper[5] == 'Y') {
+  } else if (line->last_index >= 5 && oper[0] == 'D' && oper[1] == 'E' && oper[2] == 'G' && oper[3] == '_' && oper[4] == 'B' && oper[5] == 'Y') {
     if (oper[6] == ' ' && IsNumber(oper[7])) {
       res.op = DEG_BY;
       res.deg_by_arg = ReadDegByArg(line, 7);
     } else {
-      line->is_correct = false;
       line->error_type = WR_DEG_BY_VAR;
     }
-  } else if (line->index >= 1 && oper[0] == 'A' && oper[1] == 'T') {
-    if (line->index >= 3 && oper[2] == ' ' && (oper[3] == '-' || IsNumber(oper[3]))) {
+  } else if (line->last_index >= 1 && oper[0] == 'A' && oper[1] == 'T') {
+    if (line->last_index >= 3 && oper[2] == ' ' && (oper[3] == '-' || IsNumber(oper[3]))) {
       res.op = AT;
       res.at_arg = ReadAtArg(line, 3);
     } else {
-      line->is_correct = false;
       line->error_type = WR_AT_VAL;
     }
-  } else if (line->index == 5 && oper[0] == 'P' && oper[1] == 'R' && oper[2] == 'I' && oper[3] == 'N' && oper[4] == 'T' && oper[5] == '\0')
+  } else if (line->last_index == 5 && oper[0] == 'P' && oper[1] == 'R' && oper[2] == 'I' && oper[3] == 'N' && oper[4] == 'T' && oper[5] == '\0')
     res.op = PRINT;
-  else if (line->index == 5 && oper[0] == 'C' && oper[1] == 'L' && oper[2] == 'O' && oper[3] == 'N' && oper[4] == 'E' && oper[5] == '\0')
+  else if (line->last_index == 5 && oper[0] == 'C' && oper[1] == 'L' && oper[2] == 'O' && oper[3] == 'N' && oper[4] == 'E' && oper[5] == '\0')
     res.op = CLONE;
   else {
-    line->is_correct = false;
     line->error_type = WR_COMMAND;
   }
   return res;
 }
 
-static bool IsCorrectOperChar(char ch) {
+static bool IsCorrectOperChar(int ch) {
   return (IsNumber(ch) || (ch >= 'A' && ch <= 'Z') || ch == '-' || ch == '_');
 }
 
+static bool IsOperLine(int ch) {
+  return (ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z');
+}
+
+static bool IsIgnoredLine(int ch) {
+  return ch == '#' || ch == EOF || ch =='\n';
+}
+static bool IsCorrectPolyChar(int last_ch, int ch) {
+  bool res = true;
+  if (!(ch == '(' || ch == ')' || ch == ',' || ch == '-' || ch == '+' || IsNumber(ch)))
+    res = false;
+  else if (last_ch == '(' && ch != '(' && !IsNumber(ch) && ch != '-')
+    res = false;
+  else if (last_ch == ',' && !IsNumber(ch) && ch != '-')
+    res = false;
+  else if (last_ch == ')' && ch != ',' && ch != '+')
+    res = false;
+  else if (last_ch == '-' && !IsNumber(ch))
+    res = false;
+  else if (IsNumber(last_ch) && !IsNumber(ch) && ch != ',' && ch != ')')
+    res = false;
+  else if (last_ch == '+' && ch != '(')
+    res = false;
+  return res;
+}
+
+// akceptuje wiodące zera
+static bool IsCorrectPoly(int *str, size_t str_size) {
+  assert(str && str_size > 0);
+  bool is_correct = true;
+  if (IsNumber(str[0]) || (str[0] == '-' && str_size > 1)) {
+    for (size_t i = 1; is_correct && i < str_size; i++)
+      if (!IsNumber(str[i]))
+        is_correct = false;
+  }
+  else if (str[0] == '(') {
+    size_t parenths = 1, cl_parenths = 0, commas = 0;
+    for (size_t i = 1 ; is_correct && i < str_size; i++) {
+      if (parenths < 0 || !IsCorrectPolyChar(str[i], str[i - 1]))
+        is_correct = false;
+      if (str[i] == '(') parenths++;
+      else if (str[i] == ')') {
+        cl_parenths++;
+        parenths--;
+      } else if (str[i] == ',')
+        commas++;
+    }
+    if (parenths != 0 || cl_parenths != commas)
+      is_correct = false;
+  }
+  else is_correct = false;
+  return is_correct;
+}
+/*
+static Poly ConvertLineToPoly(int *str, size_t str_size) {
+  if (IsCorrectPoly(str, str_size) && HasCorrectNumbers((char *) str, str_size)) {
+    line->p = StrToPoly(&str);
+  }
+  else line->error_type = WR_POLY;
+}
+*/
+
+static Line NewLine() {
+  Line res;
+  res.chars = malloc(DEF_ALLOC_SIZE * sizeof res.chars);
+  res.size = DEF_ALLOC_SIZE;
+  CheckAlloc(res.chars);
+  res.last_index = 0;
+  res.error_type = NONE_ERR;
+  res.is_eof = false;
+  return res;
+}
+
+static void IncreaseLineSize(Line *line) {
+  line->chars = realloc(line->chars, DEF_ALLOC_COEFF * sizeof line->chars);
+  CheckAlloc(line->chars);
+  line->size *= DEF_ALLOC_COEFF;
+}
+
+static Line ReadLine() {
+  int ch;
+  Line res;
+  ch = getchar();
+  if (IsIgnoredLine(ch))
+    res.type = EMPTY;
+  else {
+    if (IsOperLine(ch))
+      res.type = OPER;
+    else res.type = POLY;
+    res = NewLine();
+    while ((ch = getchar()) != EOF && ch != '\n') {
+      res.chars[res.last_index++] = ch;
+      if (res.last_index == res.size)
+        IncreaseLineSize(&res);
+    }
+    res.chars[res.last_index] = '\0';
+  }
+  res.is_eof = ch == EOF ? true : false;
+  return res;
+}
+
+Line GetNextLine() {
+  Line res = ReadLine();
+  int *str = res.chars;
+  if (res.type == POLY) {
+    if (IsCorrectPoly(str, res.last_index) && HasCorrectNumbers((char *) str, res.last_index))
+      res.p = StrToPoly((char **) &str);
+    else
+      res.error_type = WR_POLY;
+  }
+  else if (res.type == OPER)
+    res.c = ReadCommand(&res);
+  if (res.error_type != NONE_ERR)
+    FreeUncorrectLine(&res);
+  return res;
+}
+
+/*
 Line ReadLine() {
   int ch, last_ch;
   Line line = AllocMemForLine();
   size_t parenths = 0, cl_parenths = 0, commas = 0;
   bool is_coeff = true;
   while ((ch = getchar()) != EOF && ch != '\n') {
-    if (line.index == 0) {
+    if (line.last_index == 0) {
       if (ch == '#') {
         line.type = EMPTY_LINE;
         break;
@@ -341,16 +401,16 @@ Line ReadLine() {
         else if (ch == ',') commas++;
       }
       else if (!IsNumber(ch)) break; // coeff and not a number
-      /*
+
       if (line.type == OPER_LINE) {
         if (!IsCorrectOperChar(ch))
           break;
       }
-       */
+
     }
-    if (line.index == line.size - 1)
+    if (line.last_index == line.size - 1)
       IncreaseLineSize(&line);
-    line.chars[line.index++] = ch;
+    line.chars[line.last_index++] = ch;
     last_ch = ch;
   }
   // (-1,0EOF <- sie wywala
@@ -365,7 +425,7 @@ Line ReadLine() {
     }
   }
   else
-    line.chars[line.index] = '\0';
+    line.chars[line.last_index] = '\0';
   if (ch == EOF)
     line.is_eof = true;
   // przerwane wczytywanie linii, trzeba skipnąć do końca
@@ -376,7 +436,7 @@ Line ReadLine() {
   }
   //puts(line.chars);
   return line;
-}
+}*/
 /**
 int main() {
   size_t line_num = 0;

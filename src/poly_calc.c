@@ -1,6 +1,5 @@
 #include "poly_parser.h"
-#include "poly.h"
-#include "poly_stack.c"
+#include "poly_stack.h"
 #include <stdio.h>
 
 /**
@@ -10,19 +9,41 @@
  */
 static size_t line_num = 1;
 
+void PrintError(Error error_type) {
+  switch (error_type) {
+    case WR_POLY:
+      fprintf(stderr, "ERROR %zu WRONG POLY\n", line_num);
+      break;
+    case WR_COMMAND:
+      fprintf(stderr, "ERROR %zu WRONG COMMAND\n", line_num);
+      break;
+    case WR_DEG_BY_VAR:
+      fprintf(stderr, "ERROR %zu DEG BY WRONG VARIABLE\n", line_num);
+      break;
+    case WR_AT_VAL:
+      fprintf(stderr, "ERROR %zu AT WRONG VALUE\n", line_num);
+      break;
+    case ST_UND:
+      fprintf(stderr, "ERROR %zu STACK UNDERFLOW\n", line_num);
+      break;
+    default:
+      break;
+  }
+}
+
 static bool CanPerformOp(Operator op, Stack *s) {
   bool res = true;
   switch (op) {
     case ZERO: case IS_COEFF: case IS_ZERO: case CLONE: case NEG: case DEG:
     case DEG_BY: case AT: case PRINT: case POP:
-      if (IsEmpty(s)) {
-        PrintError(line_num, ST_UND);
+      if (StackIsEmpty(s)) {
+        PrintError(ST_UND);
         res = false;
       }
       break;
       case ADD: case MUL: case SUB: case IS_EQ:
-        if (GetNumberOfPolys(s) < 2) {
-          PrintError(line_num, ST_UND);
+        if (StackNumberOfPolys(s) < 2) {
+          PrintError(ST_UND);
           res = false;
         }
       break;
@@ -34,75 +55,97 @@ static bool CanPerformOp(Operator op, Stack *s) {
 
 static void Zero(Stack *s) {
   assert(s);
-  Push(s, PolyZero());
+  StackPush(s, PolyZero());
 }
 
 static void IsCoeff(Stack *s) {
-  if (CanPerformOp(IS_COEFF, s))
-    printf("%d\n", PolyIsCoeff(PeekFirst(s)) ? 1 : 0);
+  if (CanPerformOp(IS_COEFF, s)) {
+    printf("%d\n", PolyIsCoeff(StackPeekFirst(s)) ? 1 : 0);
+  }
 }
 
 static void IsZero(Stack *s) {
   if (CanPerformOp(IS_ZERO, s))
-    printf("%d\n", PolyIsZero(PeekFirst(s)) ? 1 : 0);
+    printf("%d\n", PolyIsZero(StackPeekFirst(s)) ? 1 : 0);
 }
 
 static void Clone(Stack *s) {
   if (CanPerformOp(CLONE, s))
-    Push(s, PolyClone(PeekFirst(s)));
+    StackPush(s, PolyClone(StackPeekFirst(s)));
 }
 
 static void Add(Stack *s) {
-  if (CanPerformOp(ADD, s))
-    Push(s, PolyAdd(StackPop(s), StackPop(s)));
+  if (CanPerformOp(ADD, s)) {
+    Poly p = StackPop(s), q = StackPop(s);
+    StackPush(s, PolyAdd(&p, &q));
+    PolyDestroy(&p);
+    PolyDestroy(&q);
+  }
 }
 
 static void Mul(Stack *s) {
-  if (CanPerformOp(MUL, s))
-    Push(s, PolyMul(StackPop(s), StackPop(s)));
+  if (CanPerformOp(MUL, s)) {
+    Poly p = StackPop(s), q = StackPop(s);
+    StackPush(s, PolyMul(&p, &q));
+    PolyDestroy(&p);
+    PolyDestroy(&q);
+  }
 }
 
 static void Neg(Stack *s) {
-  if (CanPerformOp(NEG, s))
-    Push(s, PolyNeg(StackPop(s)));
+  if (CanPerformOp(NEG, s)) {
+    Poly p = StackPop(s);
+    StackPush(s, PolyNeg(&p));
+    PolyDestroy(&p);
+  }
 }
 
 static void Sub(Stack *s) {
-  if (CanPerformOp(SUB, s))
-    Push(s, PolySub(StackPop(s), StackPop(s)));
+  if (CanPerformOp(SUB, s)) {
+    Poly p = StackPop(s), q = StackPop(s);
+    StackPush(s, PolySub(&p, &q));
+    PolyDestroy(&p);
+    PolyDestroy(&q);
+  }
 }
 
 static void IsEq(Stack *s) {
   if (CanPerformOp(IS_EQ, s))
-    printf("%d\n", PolyIsEq(PeekFirst(s), PeekSecond(s)) ? 1 : 0);
+    printf("%d\n", PolyIsEq(StackPeekFirst(s), StackPeekSecond(s)) ? 1 : 0);
 }
 
 static void Deg(Stack *s) {
   if (CanPerformOp(DEG, s))
-    printf("%d\n", PolyDeg(PeekFirst(s)));
+    printf("%d\n", PolyDeg(StackPeekFirst(s)));
 }
 
 static void DegBy(Stack *s, deg_by_arg_t var) {
   if (CanPerformOp(DEG_BY, s))
-    printf("%d\n", PolyDegBy(PeekFirst(s), var));
+    printf("%d\n", PolyDegBy(StackPeekFirst(s), var));
 }
 
 static void At(Stack *s, at_arg_t var) {
-  if (CanPerformOp(AT, s))
-    Push(s, PolyAt(StackPop(s), var));
+  if (CanPerformOp(AT, s)) {
+    Poly p = StackPop(s);
+    StackPush(s, PolyAt(&p, var));
+    PolyDestroy(&p);
+  }
 }
 
 static void Print(Stack *s) {
   if (CanPerformOp(PRINT, s)) {
-    PolyPrint(PeekFirst(s));
+    PolyPrint(StackPeekFirst(s));
     printf("\n");
   }
 }
 
 static void Pop(Stack *s) {
-  if (!IsEmpty(s))
-    StackDelTop(s);
+  if (CanPerformOp(POP, s)) {
+    Poly p = StackPop(s);
+    PolyDestroy(&p);
+  }
 }
+
 static void PerformCommand(Stack *s, Command command) {
   switch (command.op) {
     case ZERO:
@@ -154,6 +197,28 @@ static void PerformCommand(Stack *s, Command command) {
 
 int main() {
   Line line;
+  Error err;
+  Stack *s = NewStack();
+  do {
+    line = GetNextLine();
+    if ((err = line.error_type) != NONE_ERR)
+      PrintError(err);
+    else {
+      LineType type = line.type;
+      if (type == POLY_LINE)
+        StackPush(s, line.p);
+      else if (type == OPER_LINE)
+        PerformCommand(s, line.c);
+    }
+    free(line.chars);
+  }
+  while (!line.is_eof);
+  StackFree(s);
+}
+
+/**
+int main() {
+  Line line;
   Stack *s = NewStack();
  do {
    line = ReadLine();
@@ -164,21 +229,22 @@ int main() {
        if (line.is_correct)
          Push(s, StrToPoly(&line.chars));
        else
-         PrintError(line_num, line.error_type);
+         PrintError(line.error_type);
      }
      else if (line.type == OPER_LINE) {
        Command command = ReadCommand(&line);
        if (line.is_correct)
          PerformCommand(s, command);
        else
-         PrintError(line_num, line.error_type);
+         PrintError(line.error_type);
      }
      free(string);
    }
-   else PrintError(line_num, line.error_type);
+   else PrintError(line.error_type);
    line_num++;
  }
  while (!line.is_eof);
  StackFree(s);
  return (0);
 }
+ */
