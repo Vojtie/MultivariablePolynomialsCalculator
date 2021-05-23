@@ -10,8 +10,8 @@
  * czy może tak być że ReadLine skończy wczytywać przed EOF i następne wywołanie
  * się scrashuje
  */
-static void CheckAlloc(const void *pointer) {
-  if (!pointer)
+static void CheckAlloc(const void *pocharer) {
+  if (!pocharer)
     exit(1);
 }
 
@@ -29,7 +29,7 @@ static Mono *IncreaseMemForMonos(Mono *monos, size_t *size) {
 }
 /**
 typedef enum Operator {
-    ZERO, IS_COEFF, IS_ZERO, CLONE, ADD, MUL, NEG, SUB, IS_EQ, DEG, DEG_BY, AT, PRINT, POP, NONE
+    ZERO, IS_COEFF, IS_ZERO, CLONE, ADD, MUL, NEG, SUB, IS_EQ, DEG, DEG_BY, AT, PRchar, POP, NONE
 } Operator;
 
 typedef unsigned long deg_by_arg_t;
@@ -142,37 +142,8 @@ static void IncreaseLineSize(Line *line) {
 }
 */
 
-static bool IsNumber(int ch) {
+static bool IsNumber(char ch) {
   return ch >= '0' && ch <= '9';
-}
-
-static void FreeUncorrectLine(Line *line) {
-  free(line->chars);
-  line->chars = NULL;
-}
-
-bool HasCorrectNumbers(char *str, size_t str_size) {
-  errno = 0;
-  bool correct = true;
-  if (IsNumber(str[0]) || str[0] == '-') {
-    strtol(str, NULL, 10);
-    if (errno == ERANGE)
-      correct = false;
-  }
-  for (size_t i = 0; correct && i < str_size - 1; i++) {
-    if (str[i] == '(' && (str[i + 1] == '-' || IsNumber(str[i + 1]))) {
-      strtol(&str[i + 1], NULL, 10);
-      if (errno == ERANGE)
-        correct = false;
-    }
-    else if (str[i] == ',') {
-      long exp = strtol(&str[i + 1], NULL, 10);
-      if (exp > INT_MAX || exp < 0) {
-        correct = false;
-      }
-    }
-  }
-  return correct;
 }
 
 static deg_by_arg_t ReadDegByArg(Line *line, size_t arg_i) {
@@ -198,7 +169,7 @@ static at_arg_t ReadAtArg(Line *line, size_t arg_i) {
 }
 
 static Command ReadCommand(Line *line) {
-  assert(line->type == OPER_LINE);
+  assert(line->type == OPER);
   Command res;
   res.op = NONE_OP;
   char *oper = (char *) line->chars;
@@ -248,7 +219,7 @@ static Command ReadCommand(Line *line) {
   return res;
 }
 /*
-static bool IsCorrectOperChar(int ch) {
+static bool IsCorrectOperChar(char ch) {
   return (IsNumber(ch) || (ch >= 'A' && ch <= 'Z') || ch == '-' || ch == '_');
 }
 */
@@ -259,7 +230,7 @@ static bool IsOperLine(int ch) {
 static bool IsIgnoredLine(int ch) {
   return ch == '#' || ch == EOF || ch =='\n';
 }
-static bool IsCorrectPolyChar(int last_ch, int ch) {
+static bool IsCorrectPolyChar(char last_ch, char ch) {
   bool res = true;
   /*
   if (!(ch == '(' || ch == ')' || ch == ',' || ch == '-' || ch == '+' || IsNumber(ch)))
@@ -281,7 +252,7 @@ static bool IsCorrectPolyChar(int last_ch, int ch) {
 }
 
 // akceptuje wiodące zera
-static bool IsCorrectPoly(int *str, size_t str_size) {
+static bool IsCorrectPoly(char *str, size_t str_size) {
   assert(str && str_size > 0);
   bool is_correct = true;
   if (IsNumber(str[0]) || (str[0] == '-' && str_size > 1)) {
@@ -290,9 +261,10 @@ static bool IsCorrectPoly(int *str, size_t str_size) {
         is_correct = false;
   }
   else if (str[0] == '(') {
-    size_t parenths = 1, cl_parenths = 0, commas = 0;
+    int parenths = 1;
+    size_t cl_parenths = 0, commas = 0;
     for (size_t i = 1 ; is_correct && i < str_size; i++) {
-      if (parenths < 0 || !IsCorrectPolyChar(str[i], str[i - 1]))
+      if (parenths < 0 || !IsCorrectPolyChar(str[i - 1], str[i]))
         is_correct = false;
       if (str[i] == '(') parenths++;
       else if (str[i] == ')') {
@@ -301,14 +273,14 @@ static bool IsCorrectPoly(int *str, size_t str_size) {
       } else if (str[i] == ',')
         commas++;
     }
-    if (parenths != 0 || cl_parenths != commas)
+    if (parenths != 0 || cl_parenths != commas || str[str_size - 1] == '+')
       is_correct = false;
   }
   else is_correct = false;
   return is_correct;
 }
 /*
-static Poly ConvertLineToPoly(int *str, size_t str_size) {
+static Poly ConvertLineToPoly(char *str, size_t str_size) {
   if (IsCorrectPoly(str, str_size) && HasCorrectNumbers((char *) str, str_size)) {
     line->p = StrToPoly(&str);
   }
@@ -318,7 +290,7 @@ static Poly ConvertLineToPoly(int *str, size_t str_size) {
 
 static Line NewLine() {
   Line res;
-  res.chars = malloc(DEF_ALLOC_SIZE * sizeof res.chars);
+  res.chars = malloc(DEF_ALLOC_SIZE * sizeof(*res.chars));
   res.size = DEF_ALLOC_SIZE;
   CheckAlloc(res.chars);
   res.last_index = 0;
@@ -328,24 +300,28 @@ static Line NewLine() {
 }
 
 static void IncreaseLineSize(Line *line) {
-  line->chars = realloc(line->chars, DEF_ALLOC_COEFF * sizeof line->chars);
+  line->chars = realloc(line->chars, DEF_ALLOC_COEFF * line->size * sizeof(*line->chars));
   CheckAlloc(line->chars);
   line->size *= DEF_ALLOC_COEFF;
 }
 
 static Line ReadLine() {
-  int ch;
   Line res;
-  ch = getchar();
-  if (IsIgnoredLine(ch))
+  int ch = getchar();
+  if (IsIgnoredLine(ch)) {
     res.type = EMPTY;
+    res.error_type = NONE_ERR;
+    while (ch!= EOF && ch != '\n')
+      ch = getchar();
+  }
   else {
+    res = NewLine();
     if (IsOperLine(ch))
       res.type = OPER;
     else res.type = POLY;
-    res = NewLine();
+    res.chars[res.last_index++] = (char) ch;
     while ((ch = getchar()) != EOF && ch != '\n') {
-      res.chars[res.last_index++] = ch;
+      res.chars[res.last_index++] = (char) ch;
       if (res.last_index == res.size)
         IncreaseLineSize(&res);
     }
@@ -355,9 +331,33 @@ static Line ReadLine() {
   return res;
 }
 
+static bool HasCorrectNumbers(char *str, size_t str_size) {
+  errno = 0;
+  bool correct = true;
+  if (IsNumber(str[0]) || str[0] == '-') {
+    strtol(str, NULL, 10);
+    if (errno == ERANGE)
+      correct = false;
+  }
+  for (size_t i = 0; correct && i < str_size - 1; i++) {
+    if (str[i] == '(' && (str[i + 1] == '-' || IsNumber(str[i + 1]))) {
+      strtol(&str[i + 1], NULL, 10);
+      if (errno == ERANGE)
+        correct = false;
+    }
+    else if (str[i] == ',') {
+      long exp = strtol(&str[i + 1], NULL, 10);
+      if (exp > INT_MAX || exp < 0) {
+        correct = false;
+      }
+    }
+  }
+  return correct;
+}
+
 Line GetNextLine() {
   Line res = ReadLine();
-  int *str = res.chars;
+  char *str = res.chars;
   if (res.type == POLY) {
     if (IsCorrectPoly(str, res.last_index) && HasCorrectNumbers((char *) str, res.last_index))
       res.p = StrToPoly((char **) &str);
@@ -366,14 +366,15 @@ Line GetNextLine() {
   }
   else if (res.type == OPER)
     res.c = ReadCommand(&res);
-  if (res.error_type != NONE_ERR)
-    FreeUncorrectLine(&res);
+  //else res.
+  //if (res.error_type != NONE_ERR)
+    //FreeUncorrectLine(&res);
   return res;
 }
 
 /*
 Line ReadLine() {
-  int ch, last_ch;
+  char ch, last_ch;
   Line line = AllocMemForLine();
   size_t parenths = 0, cl_parenths = 0, commas = 0;
   bool is_coeff = true;
@@ -440,14 +441,14 @@ Line ReadLine() {
   return line;
 }*/
 /**
-int main() {
+char main() {
   size_t line_num = 0;
   Line input = ReadLine();
   char *ptr = input.chars;
   if (input.is_correct)
     CheckLimits(&input);
   if (!input.is_correct)
-    PrintError(line_num, input.error_type);
+    PrcharError(line_num, input.error_type);
   else {
     char **string = &input.chars;
     if (input.type == POLY_LINE) {
@@ -456,7 +457,7 @@ int main() {
     } else if (input.type == OPER_LINE) {
       Command op = ReadCommand(&input);
       if (!input.is_correct)
-        PrintError(line_num, input.error_type);
+        PrcharError(line_num, input.error_type);
     }
   }
   free(ptr);

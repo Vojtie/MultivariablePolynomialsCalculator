@@ -140,10 +140,13 @@ static Poly PolyAddCoeffToMonos(const Poly *p, poly_coeff_t coeff) {
   } else {
     res.size = PolyGetSize(p) + 1;
     res.arr = AllocMemForMonos(PolyGetSize(&res));
-    for (size_t i = 0; i < PolyGetSize(p); i++)
+    for (size_t i = 0; i < res.size - 1; i++) // zmiana z PolyGetSize(p)
       res.arr[i] = MonoClone(&p->arr[i]);
     res.arr[PolyGetSize(p)].p = PolyFromCoeff(coeff);
     res.arr[PolyGetSize(p)].exp = 0;
+    /*
+    PolyPrint(&res);
+    printf("\n"); */
   }
   return res;
 }
@@ -168,6 +171,10 @@ static Poly PolyMergeTwoPolys(const Poly *p, const Poly *q) {
   for (size_t i = p_size, j = 0; i < res.size; i++, j++) {
     res.arr[i] = MonoClone(&q->arr[j]);
   }
+  /*
+  PolyPrint(&res);
+  printf("\n");
+   */
   return res;
 }
 
@@ -227,7 +234,11 @@ Poly PolyAdd(const Poly *p, const Poly *q) {
     res = PolyAddMonos(res.size, res.arr);
     free(temp);
   }
-  return res;
+  /*
+  PolyPrint(&res);
+  printf("\n");
+   */
+  return PolySimplify(&res);
 }
 
 /**
@@ -415,7 +426,7 @@ Poly PolyNeg(const Poly *p) {
     res = PolyFromCoeff(NegCoeff(PolyGetCoeff(p)));
   else
     res = PolyNegMonos(PolyGetSize(p), PolyGetArr(p));
-  return res;
+  return PolySimplify(&res);
 }
 
 Poly PolySub(const Poly *p, const Poly *q) {
@@ -423,7 +434,7 @@ Poly PolySub(const Poly *p, const Poly *q) {
   Poly q_neg = PolyNeg(q);
   Poly res = PolyAdd(p, &q_neg);
   PolyDestroy(&q_neg);
-  return res;
+  return PolySimplify(&res);
 }
 
 /**
@@ -487,7 +498,7 @@ Poly PolyMul(const Poly *p, const Poly *q) {
     res = PolyAddMonos(PolyGetSize(&res), PolyGetArr(&res));
     free(temp);
   }
-    return res;
+    return PolySimplify(&res);
 }
 
 poly_exp_t PolyDegBy(const Poly *p, size_t var_idx) {
@@ -558,12 +569,18 @@ Poly PolyAt(const Poly *p, poly_coeff_t x) {
       PolyDestroy(&temp1);
     }
   }
-  return res;
+  return PolySimplify(&res);
 }
 // zamienia wiel z samymi exp = 0 na coeff
+//przejmuje na własność @p p
+// moze zmienic na void
 Poly PolySimplify(Poly *p) {
+  /*
+  printf("before simplifying:\t");
+  PolyPrint(p);
+  printf("\n");*/
   Poly res, *temp = p;
-  while (!PolyIsCoeff(temp) && PolyGetSize(p) == 1 && MonoGetExp(&p->arr[0]) == 0)
+  while (!PolyIsCoeff(temp) && PolyGetSize(temp) == 1 && MonoGetExp(&temp->arr[0]) == 0)
     temp = &temp->arr[0].p;
   if (PolyIsCoeff(temp)) {
     res = PolyFromCoeff(PolyGetCoeff(temp));
@@ -575,7 +592,10 @@ Poly PolySimplify(Poly *p) {
       res.coeff = PolyGetCoeff(p);
     else
       res.size = PolyGetSize(p);
-  }
+  } /*
+  printf("after simplifying:\t");
+  PolyPrint(&res);
+  printf("\n"); */
   return res;
 }
 

@@ -9,10 +9,6 @@
 
 #include "poly.h"
 
-#define EMPTY_LINE 0
-#define POLY_LINE 1
-#define OPER_LINE 2
-
 typedef enum Operator {
     ZERO, IS_COEFF, IS_ZERO, CLONE, ADD, MUL, NEG, SUB, IS_EQ, DEG, DEG_BY, AT, PRINT, POP, NONE_OP
 } Operator;
@@ -38,7 +34,7 @@ typedef enum LineType {
 } LineType;
 
 typedef struct Line {
-    int *chars;
+    char *chars;
     bool is_eof;
     Error error_type;
     size_t size;

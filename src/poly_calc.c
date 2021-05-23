@@ -205,12 +205,14 @@ int main() {
       PrintError(err);
     else {
       LineType type = line.type;
-      if (type == POLY_LINE)
+      if (type == POLY)
         StackPush(s, line.p);
-      else if (type == OPER_LINE)
+      else if (type == OPER)
         PerformCommand(s, line.c);
+      if (type != EMPTY)
+        free(line.chars);
     }
-    free(line.chars);
+    line_num++;
   }
   while (!line.is_eof);
   StackFree(s);
