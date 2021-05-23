@@ -33,11 +33,11 @@ Stack *NewStack() {
   return res;
 }
 
-static void StackInrease(Stack *s) {
+static void StackIncrease(Stack *s) {
   assert(s);
-  s->polys = realloc(s->polys, s->size * DEF_ALLOC_COEFF);
-  CheckAlloc(s->polys);
   s->size *= DEF_ALLOC_COEFF;
+  s->polys = realloc(s->polys, s->size * sizeof(*s->polys));
+  CheckAlloc(s->polys);
 }
 
 static bool StackIsFull(Stack *s) {
@@ -58,7 +58,7 @@ Poly StackPop(Stack *s) {
 void StackPush(Stack *s, Poly p) {
   assert(s && s->size > 0);
   if (StackIsFull(s))
-    StackInrease(s);
+    StackIncrease(s);
   s->polys[++s->top] = p;
 }
 

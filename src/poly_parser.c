@@ -173,45 +173,47 @@ static Command ReadCommand(Line *line) {
   Command res;
   res.op = NONE_OP;
   char *oper = (char *) line->chars;
-  if (line->last_index == 3 && oper[0] == 'A' && oper[1] == 'D' && oper[2] == 'D' && oper[3] == '\0')
+  if (line->last_index == 3 && oper[0] == 'A' && oper[1] == 'D' && oper[2] == 'D')
     res.op = ADD;
-  else if (line->last_index == 3 && oper[0] == 'M' && oper[1] == 'U' && oper[2] == 'L' && oper[3] == '\0')
+  else if (line->last_index == 3 && oper[0] == 'M' && oper[1] == 'U' && oper[2] == 'L')
     res.op = MUL;
-  else if (line->last_index == 3 && oper[0] == 'N' && oper[1] == 'E' && oper[2] == 'G' && oper[3] == '\0')
+  else if (line->last_index == 3 && oper[0] == 'N' && oper[1] == 'E' && oper[2] == 'G')
     res.op = NEG;
-  else if (line->last_index == 3 && oper[0] == 'S' && oper[1] == 'U' && oper[2] == 'B' && oper[3] == '\0')
+  else if (line->last_index == 3 && oper[0] == 'S' && oper[1] == 'U' && oper[2] == 'B')
     res.op = SUB;
-  else if (line->last_index == 3 && oper[0] == 'D' && oper[1] == 'E' && oper[2] == 'G' && oper[3] == '\0')
+  else if (line->last_index == 3 && oper[0] == 'D' && oper[1] == 'E' && oper[2] == 'G')
     res.op = DEG;
-  else if (line->last_index == 3 && oper[0] == 'P' && oper[1] == 'O' && oper[2] == 'P' && oper[3] == '\0')
+  else if (line->last_index == 3 && oper[0] == 'P' && oper[1] == 'O' && oper[2] == 'P')
     res.op = POP;
-  else if (line->last_index == 4 && oper[0] == 'Z' && oper[1] == 'E' && oper[2] == 'R' && oper[3] == '0' && oper[4] == '\0')
+  else if (line->last_index == 4 && oper[0] == 'Z' && oper[1] == 'E' && oper[2] == 'R' && oper[3] == 'O')
     res.op = ZERO;
   else if (line->last_index >= 5 && oper[0] == 'I' && oper[1] == 'S' && oper[2] == '_') {
-    if (line->last_index == 9 && oper[3] == 'C' && oper[4] == 'O' && oper[5] == 'E' && oper[6] == 'F' && oper[7] == 'F' && oper[8] == 'O' &&
-        oper[9] == '\0')
+    if (line->last_index == 9 && oper[3] == 'C' && oper[4] == 'O' && oper[5] == 'E' && oper[6] == 'F' && oper[7] == 'F' && oper[8] == 'O')
       res.op = IS_COEFF;
-    else if (line->last_index == 7 && oper[3] == 'Z' && oper[4] == 'E' && oper[5] == 'R' && oper[6] == 'O' && oper[7] == '\0')
+    else if (line->last_index == 7 && oper[3] == 'Z' && oper[4] == 'E' && oper[5] == 'R' && oper[6] == 'O')
       res.op = IS_ZERO;
-    else if (line->last_index == 5 && oper[3] == 'E' && oper[4] == 'Q' && oper[5] == '\0')
+    else if (line->last_index == 5 && oper[3] == 'E' && oper[4] == 'Q')
       res.op = IS_EQ;
-  } else if (line->last_index >= 5 && oper[0] == 'D' && oper[1] == 'E' && oper[2] == 'G' && oper[3] == '_' && oper[4] == 'B' && oper[5] == 'Y') {
+  }
+  else if (line->last_index >= 5 && oper[0] == 'D' && oper[1] == 'E' && oper[2] == 'G' && oper[3] == '_' && oper[4] == 'B' && oper[5] == 'Y') {
     if (oper[6] == ' ' && IsNumber(oper[7])) {
       res.op = DEG_BY;
       res.deg_by_arg = ReadDegByArg(line, 7);
     } else {
       line->error_type = WR_DEG_BY_VAR;
     }
-  } else if (line->last_index >= 1 && oper[0] == 'A' && oper[1] == 'T') {
+  }
+  else if (line->last_index >= 1 && oper[0] == 'A' && oper[1] == 'T') {
     if (line->last_index >= 3 && oper[2] == ' ' && (oper[3] == '-' || IsNumber(oper[3]))) {
       res.op = AT;
       res.at_arg = ReadAtArg(line, 3);
     } else {
       line->error_type = WR_AT_VAL;
     }
-  } else if (line->last_index == 5 && oper[0] == 'P' && oper[1] == 'R' && oper[2] == 'I' && oper[3] == 'N' && oper[4] == 'T' && oper[5] == '\0')
+  }
+  else if (line->last_index == 5 && oper[0] == 'P' && oper[1] == 'R' && oper[2] == 'I' && oper[3] == 'N' && oper[4] == 'T')
     res.op = PRINT;
-  else if (line->last_index == 5 && oper[0] == 'C' && oper[1] == 'L' && oper[2] == 'O' && oper[3] == 'N' && oper[4] == 'E' && oper[5] == '\0')
+  else if (line->last_index == 5 && oper[0] == 'C' && oper[1] == 'L' && oper[2] == 'O' && oper[3] == 'N' && oper[4] == 'E')
     res.op = CLONE;
   else {
     line->error_type = WR_COMMAND;

@@ -5,7 +5,8 @@
 /**
  * czy powinniśmy wszędzie dodać assert(ptr)
  * czy line_num może być globalne
- *
+ * sprawdzić czy headery które nawzajem się includują, mimo to są zaincludowane w .c w których są potrzebne
+ * zamienić wywołania PolySimplify z poly.c na tutaj
  */
 static size_t line_num = 1;
 
