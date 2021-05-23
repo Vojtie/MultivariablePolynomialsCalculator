@@ -3,7 +3,6 @@
 
 #include <stdlib.h>
 #include "poly_stack.h"
-#include "poly.h"
 #include "stdbool.h"
 
 #define DEF_STACK_SIZE 10
@@ -52,24 +51,45 @@ bool StackIsEmpty(Stack *s) {
 }
 
 Poly StackPop(Stack *s) {
-  assert(s && !IsEmpty(s));
-  return  &s->polys[s->top--];
+  assert(s && !StackIsEmpty(s));
+  return s->polys[s->top--];
 }
 
 void StackPush(Stack *s, Poly p) {
   assert(s && s->size > 0);
-  if (IsFull(s))
-    InreaseStack(s);
+  if (StackIsFull(s))
+    StackInrease(s);
   s->polys[++s->top] = p;
 }
 
 Poly *StackPeekFirst(Stack *s) {
-  assert(s && !IsEmpty(s));
+  assert(s && !StackIsEmpty(s));
   return &s->polys[s->top];
 }
+/**
+ *
+static bool IsCorrectPolyChar(int last_ch, int ch) {
+  bool res = true;
+  if (ch != '(' && ch != ')' && ch != ',' && ch != '-' && ch != '+' && !IsNumber(ch))
+    res = false;
+  else if (last_ch == '(' && (ch == ',' || ch == ')' || ch == '+'))//ch != '(' && !IsNumber(ch) && ch != '-'))
+    res = false;
+  else if (last_ch == ',' && (ch == '(' || ch == ')' || ch == '+'))// !IsNumber(ch) && ch != '-')
+    res = false;
+  else if (last_ch == ')' && (ch == ''))//ch != ',' && ch != '+')
+    res = false;
+  else if (last_ch == '-' && !IsNumber(ch))
+    res = false;
+  else if (IsNumber(last_ch) && !IsNumber(ch) && ch != ',' && ch != ')')
+    res = false;
+  else if (last_ch == '+' && ch != '(')
+    res = false;
+  return res;
+}
+ */
 
 Poly *StackPeekSecond(Stack *s) {
-  assert(s && !IsEmpty(s));
+  assert(s && !StackIsEmpty(s));
   return &s->polys[s->top - 1];
 }
 

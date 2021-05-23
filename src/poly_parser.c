@@ -247,11 +247,11 @@ static Command ReadCommand(Line *line) {
   }
   return res;
 }
-
+/*
 static bool IsCorrectOperChar(int ch) {
   return (IsNumber(ch) || (ch >= 'A' && ch <= 'Z') || ch == '-' || ch == '_');
 }
-
+*/
 static bool IsOperLine(int ch) {
   return (ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z');
 }
@@ -261,9 +261,11 @@ static bool IsIgnoredLine(int ch) {
 }
 static bool IsCorrectPolyChar(int last_ch, int ch) {
   bool res = true;
+  /*
   if (!(ch == '(' || ch == ')' || ch == ',' || ch == '-' || ch == '+' || IsNumber(ch)))
     res = false;
-  else if (last_ch == '(' && ch != '(' && !IsNumber(ch) && ch != '-')
+    */
+  if (last_ch == '(' && ch != '(' && !IsNumber(ch) && ch != '-')
     res = false;
   else if (last_ch == ',' && !IsNumber(ch) && ch != '-')
     res = false;

@@ -1,6 +1,8 @@
 #ifndef POLYNOMIALS_POLY_STACK_H
 #define POLYNOMIALS_POLY_STACK_H
 
+#include "poly.h"
+
 typedef struct Stack {
     Poly *polys;
     long top;
