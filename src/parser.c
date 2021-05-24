@@ -1,7 +1,7 @@
-#ifndef POLYNOMIALS_POLY_PARSER_C
-#define POLYNOMIALS_POLY_PARSER_C
+#ifndef POLYNOMIALS_PARSER_C
+#define POLYNOMIALS_PARSER_C
 
-#include "poly_parser.h"
+#include "parser.h"
 
 #define DEF_ALLOC_SIZE 10
 #define DEF_ALLOC_COEFF 2
@@ -27,38 +27,7 @@ static Mono *IncreaseMemForMonos(Mono *monos, size_t *size) {
   CheckAlloc(res);
   return res;
 }
-/**
-typedef enum Operator {
-    ZERO, IS_COEFF, IS_ZERO, CLONE, ADD, MUL, NEG, SUB, IS_EQ, DEG, DEG_BY, AT, PRchar, POP, NONE
-} Operator;
 
-typedef unsigned long deg_by_arg_t;
-
-typedef long at_arg_t;
-
-typedef struct Command {
-    Operator op;
-    union {
-        at_arg_t at_arg;
-        deg_by_arg_t deg_by_arg;
-    };
-} Command;
-
-typedef enum Error {
-    WR_POLY, WR_COMMAND, WR_DEG_BY_VAR, WR_AT_VAL, ST_UND
-} Error;
-*/
-
-/**
-typedef struct Line {
-    char *chars;
-    bool is_correct;
-    Error error_type;
-    size_t size;
-    size_t last_index;
-    size_t type; // 1 - poly, 2 - operacja, 3 - pusty/ignorowany
-} Line;
-*/
 poly_coeff_t StrToCoeff(char **string) {
   assert(string && *string);
   return strtol(*string, string, 10);
@@ -370,96 +339,4 @@ Line GetNextLine() {
   return res;
 }
 
-/*
-Line ReadLine() {
-  char ch, last_ch;
-  Line line = AllocMemForLine();
-  size_t parenths = 0, cl_parenths = 0, commas = 0;
-  bool is_coeff = true;
-  while ((ch = getchar()) != EOF && ch != '\n') {
-    if (line.last_index == 0) {
-      if (ch == '#') {
-        line.type = EMPTY_LINE;
-        break;
-      }
-      else if ((ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z'))
-        line.type = OPER_LINE;
-      else {
-        line.type = POLY_LINE;
-        if (IsNumber(ch) || ch == '-') {
-          is_coeff = true;
-        } else if (ch == '(') {
-            parenths++;
-            is_coeff = false;
-        } else break;
-      }
-    }
-    else if (line.type == POLY_LINE) {
-      if (!is_coeff) {
-        if (!IsCorrect(last_ch, ch) || parenths < 0) break;
-        if (ch == '(') parenths++;
-        else if (ch == ')') { parenths--; cl_parenths++; }
-        else if (ch == ',') commas++;
-      }
-      else if (!IsNumber(ch)) break; // coeff and not a number
-
-      if (line.type == OPER_LINE) {
-        if (!IsCorrectOperChar(ch))
-          break;
-      }
-
-    }
-    if (line.last_index == line.size - 1)
-      IncreaseLineSize(&line);
-    line.chars[line.last_index++] = ch;
-    last_ch = ch;
-  }
-  // (-1,0EOF <- sie wywala
-  if (last_ch == '+' || last_ch == '(' || last_ch == ',' || last_ch == '-' || parenths != 0 || cl_parenths != commas || (ch != EOF && ch != '\n')) {
-    if (line.type == POLY_LINE) {
-      line.is_correct = false;
-      line.error_type = WR_POLY;
-    }
-    else if (line.type == OPER_LINE) {
-      line.is_correct = false;
-      line.error_type = WR_COMMAND;
-    }
-  }
-  else
-    line.chars[line.last_index] = '\0';
-  if (ch == EOF)
-    line.is_eof = true;
-  // przerwane wczytywanie linii, trzeba skipnąć do końca
-  else if (ch != '\n') {
-    while ((ch = getchar()) != EOF && ch != '\n');
-    if (ch == EOF)
-      line.is_eof = true;
-  }
-  //puts(line.chars);
-  return line;
-}*/
-/**
-char main() {
-  size_t line_num = 0;
-  Line input = ReadLine();
-  char *ptr = input.chars;
-  if (input.is_correct)
-    CheckLimits(&input);
-  if (!input.is_correct)
-    PrcharError(line_num, input.error_type);
-  else {
-    char **string = &input.chars;
-    if (input.type == POLY_LINE) {
-      Poly p = StrToPoly(string);
-      PolyDestroy(&p);
-    } else if (input.type == OPER_LINE) {
-      Command op = ReadCommand(&input);
-      if (!input.is_correct)
-        PrcharError(line_num, input.error_type);
-    }
-  }
-  free(ptr);
-  return 0;
-}
-*/
 #endif //POLYNOMIALS_POLY_PARSER_C

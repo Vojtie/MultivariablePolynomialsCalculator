@@ -1,8 +1,7 @@
-#include "poly_parser.h"
-#include "poly_stack.h"
-#include <stdio.h>
+#include "calc.h"
 
 /**
+ * wydzielić funkcję w PolyAdd
  * czy powinniśmy wszędzie dodać assert(ptr)
  * czy line_num może być globalne
  * sprawdzić czy headery które nawzajem się includują, mimo to są zaincludowane w .c w których są potrzebne
@@ -10,7 +9,7 @@
  */
 static size_t line_num = 1;
 
-void PrintError(Error error_type) {
+static void PrintError(Error error_type) {
   switch (error_type) {
     case WR_POLY:
       fprintf(stderr, "ERROR %zu WRONG POLY\n", line_num);
@@ -129,10 +128,10 @@ static void DegBy(Stack *s, deg_by_arg_t var) {
     printf("%d\n", PolyDegBy(StackPeekFirst(s), var));
 }
 
-static void At(Stack *s, at_arg_t var) {
+static void At(Stack *s, at_arg_t x) {
   if (CanPerformOp(AT, s)) {
     Poly p = StackPop(s);
-    Poly q = PolyAt(&p, var);
+    Poly q = PolyAt(&p, x);
     StackPush(s, PolySimplifyRec(&q));
     PolyDestroy(&p);
   }
@@ -201,6 +200,11 @@ static void PerformCommand(Stack *s, Command command) {
   }
 }
 
+/**
+ * Przeprowadza działanie kalkulatora
+ * poprzez obsługę poleceń oraz błędów.
+ * @return kod wyjścia programu
+ */
 int main() {
   Line line;
   Error err;
@@ -208,8 +212,8 @@ int main() {
   do {
     line = GetNextLine();
     LineType type = line.type;
-    if ((err = line.error_type) != NONE_ERR)
-      PrintError(err);
+    if (line.error_type != NONE_ERR)
+      PrintError(line.error_type);
     else {
       if (type == POLY)
         StackPush(s, line.p);
@@ -222,4 +226,5 @@ int main() {
   }
   while (!line.is_eof);
   StackFree(s);
+  return 0;
 }

@@ -1,11 +1,3 @@
-/** @file
-  Implementacja klasy wielomianów rzadkich wielu zmiennych
-
-  @authors Wojciech Kuzebski <wk429552@students.mimuw.edu.pl>
-  @copyright Uniwersytet Warszawski
-  @date 2021
-*/
-
 #include <stdlib.h>
 #include <stdio.h>
 #include "poly.h"
@@ -166,33 +158,6 @@ static Poly PolyAddCoeffToMonos(const Poly *p, poly_coeff_t coeff) {
     for (size_t i = 1; i < res.size; i++)
       res.arr[i] = MonoClone(&p->arr[i - 1]);
   }
-  return res;
-}
-
-/**
- * Zwraca wielomian @f$p+q@f$, którego tablica jednomianów
- * składa się z kopii tablic jednomianów wielomianów
- * @p p i @p q.
- * @param[in] p : wielomian
- * @param[in] q : wielomian
- * @return wielomian @f$p+q@f$.
- */
-static Poly PolyMergeTwoPolys(const Poly *p, const Poly *q) {
-  assert(p && q);
-  Poly res;
-  res.size = PolyGetSize(p) + PolyGetSize(q);
-  res.arr = AllocMemForMonos(PolyGetSize(&res));
-  size_t p_size = PolyGetSize(p);
-  for (size_t i = 0; i < p_size; i++) {
-    res.arr[i] = MonoClone(&p->arr[i]);
-  }
-  for (size_t i = p_size, j = 0; i < res.size; i++, j++) {
-    res.arr[i] = MonoClone(&q->arr[j]);
-  }
-  /*
-  PolyPrint(&res);
-  printf("\n");
-   */
   return res;
 }
 

@@ -1,5 +1,5 @@
-#ifndef POLYNOMIALS_POLY_PARSER_H
-#define POLYNOMIALS_POLY_PARSER_H
+#ifndef POLYNOMIALS_PARSER_H
+#define POLYNOMIALS_PARSER_H
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -48,4 +48,4 @@ typedef struct Line {
 
 Line GetNextLine();
 
-#endif //POLYNOMIALS_POLY_PARSER_H
+#endif //POLYNOMIALS_PARSER_H
