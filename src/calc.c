@@ -13,6 +13,10 @@
 #include <stdlib.h>
 #include "calc.h"
 
+/**
+ * Zmienna przechowująca numer
+ * aktualnie przetwarzanego wiersza.
+ */
 static size_t line_num = 1;
 
 static void PrintError(Error error_type) {
