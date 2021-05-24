@@ -426,7 +426,7 @@ Poly PolyNeg(const Poly *p) {
     res = PolyFromCoeff(NegCoeff(PolyGetCoeff(p)));
   else
     res = PolyNegMonos(PolyGetSize(p), PolyGetArr(p));
-  return PolySimplify(&res);
+  return res;
 }
 
 Poly PolySub(const Poly *p, const Poly *q) {
@@ -434,7 +434,7 @@ Poly PolySub(const Poly *p, const Poly *q) {
   Poly q_neg = PolyNeg(q);
   Poly res = PolyAdd(p, &q_neg);
   PolyDestroy(&q_neg);
-  return PolySimplify(&res);
+  return res;
 }
 
 /**
@@ -498,7 +498,7 @@ Poly PolyMul(const Poly *p, const Poly *q) {
     res = PolyAddMonos(PolyGetSize(&res), PolyGetArr(&res));
     free(temp);
   }
-    return PolySimplify(&res);
+    return res;
 }
 
 poly_exp_t PolyDegBy(const Poly *p, size_t var_idx) {
@@ -569,7 +569,7 @@ Poly PolyAt(const Poly *p, poly_coeff_t x) {
       PolyDestroy(&temp1);
     }
   }
-  return PolySimplify(&res);
+  return res;
 }
 // zamienia wiel z samymi exp = 0 na coeff
 //przejmuje na własność @p p

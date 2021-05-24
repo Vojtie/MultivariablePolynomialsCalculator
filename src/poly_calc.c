@@ -78,7 +78,8 @@ static void Clone(Stack *s) {
 static void Add(Stack *s) {
   if (CanPerformOp(ADD, s)) {
     Poly p = StackPop(s), q = StackPop(s);
-    StackPush(s, PolyAdd(&p, &q));
+    Poly pq = PolyAdd(&p, &q);
+    StackPush(s, PolySimplify(&pq));
     PolyDestroy(&p);
     PolyDestroy(&q);
   }
@@ -87,7 +88,8 @@ static void Add(Stack *s) {
 static void Mul(Stack *s) {
   if (CanPerformOp(MUL, s)) {
     Poly p = StackPop(s), q = StackPop(s);
-    StackPush(s, PolyMul(&p, &q));
+    Poly pq = PolyMul(&p, &q);
+    StackPush(s, PolySimplify(&pq));
     PolyDestroy(&p);
     PolyDestroy(&q);
   }
@@ -96,7 +98,8 @@ static void Mul(Stack *s) {
 static void Neg(Stack *s) {
   if (CanPerformOp(NEG, s)) {
     Poly p = StackPop(s);
-    StackPush(s, PolyNeg(&p));
+    Poly q = PolyNeg(&p);
+    StackPush(s, PolySimplify(&q));
     PolyDestroy(&p);
   }
 }
@@ -104,7 +107,8 @@ static void Neg(Stack *s) {
 static void Sub(Stack *s) {
   if (CanPerformOp(SUB, s)) {
     Poly p = StackPop(s), q = StackPop(s);
-    StackPush(s, PolySub(&p, &q));
+    Poly pq = PolySub(&p, &q);
+    StackPush(s, PolySimplify(&pq));
     PolyDestroy(&p);
     PolyDestroy(&q);
   }
@@ -128,7 +132,8 @@ static void DegBy(Stack *s, deg_by_arg_t var) {
 static void At(Stack *s, at_arg_t var) {
   if (CanPerformOp(AT, s)) {
     Poly p = StackPop(s);
-    StackPush(s, PolyAt(&p, var));
+    Poly q = PolyAt(&p, var);
+    StackPush(s, PolySimplify(&q));
     PolyDestroy(&p);
   }
 }
