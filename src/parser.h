@@ -1,12 +1,7 @@
 #ifndef POLYNOMIALS_PARSER_H
 #define POLYNOMIALS_PARSER_H
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <errno.h>
-#include <limits.h>
-#include <stdbool.h>
-
+#include <stddef.h>
 #include "poly.h"
 
 typedef enum Operator {

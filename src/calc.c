@@ -1,3 +1,5 @@
+#include <stdio.h>
+#include <stdlib.h>
 #include "calc.h"
 
 /**
@@ -207,7 +209,6 @@ static void PerformCommand(Stack *s, Command command) {
  */
 int main() {
   Line line;
-  Error err;
   Stack *s = NewStack();
   do {
     line = GetNextLine();

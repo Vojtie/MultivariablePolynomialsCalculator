@@ -3,7 +3,7 @@
 
 #include "parser.h"
 
-#define DEF_ALLOC_SIZE 10
+#define DEF_ALLOC_SIZE 32
 #define DEF_ALLOC_COEFF 2
 
 /**
