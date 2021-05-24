@@ -1,5 +1,5 @@
 /** @file
-  Implementacja kalkulatora działającego na wielomianach rzadkich wielu zmiennych
+  Implementacja kalkulatora działającego na wielomianach rzadkich wielu zmiennych.
 
   @authors Wojciech Kuzebski <wk429552@students.mimuw.edu.pl>
   @copyright Uniwersytet Warszawski

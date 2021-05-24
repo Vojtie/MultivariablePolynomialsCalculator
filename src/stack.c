@@ -1,3 +1,11 @@
+/** @file
+ * Implementacja interfejsu stosu przechowującego wielomiany.
+ *
+ * @authors Wojciech Kuzebski <wk429552@students.mimuw.edu.pl>
+ * @copyright Uniwersytet Warszawski
+ * @date 2021
+*/
+
 #ifndef POLYNOMIALS_STACK_C
 #define POLYNOMIALS_STACK_C
 

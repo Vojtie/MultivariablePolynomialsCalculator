@@ -1,3 +1,11 @@
+/** @file
+  Implementacja kalkulatora działającego na wielomianach rzadkich wielu zmiennych.
+
+  @authors Wojciech Kuzebski <wk429552@students.mimuw.edu.pl>
+  @copyright Uniwersytet Warszawski
+  @date 2021
+*/
+
 #ifndef POLYNOMIALS_CALC_C
 #define POLYNOMIALS_CALC_C
 

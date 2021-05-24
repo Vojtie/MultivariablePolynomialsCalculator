@@ -1,3 +1,11 @@
+/** @file
+ * Implementacja interfejsu analizatora składniowego kalkulatora wielomianów wielu zmiennych.
+ *
+ * @authors Wojciech Kuzebski <wk429552@students.mimuw.edu.pl>
+ * @copyright Uniwersytet Warszawski
+ * @date 2021
+ */
+
 #ifndef POLYNOMIALS_PARSER_C
 #define POLYNOMIALS_PARSER_C
 
