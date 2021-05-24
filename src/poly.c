@@ -287,7 +287,6 @@ Poly PolyAdd(const Poly *p, const Poly *q) {
       res.arr[i++] = MonoClone(&p->arr[p_i++]);
     while (q_i < q_size)
       res.arr[i++] = MonoClone(&q->arr[q_i++]);
-    PolyPrint(&res);
   }
     /*
     res = PolyMergeTwoPolys(p, q);
