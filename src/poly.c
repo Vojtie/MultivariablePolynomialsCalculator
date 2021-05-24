@@ -245,11 +245,12 @@ Poly PolyAdd(const Poly *p, const Poly *q) {
   } else if (PolyIsCoeff(q)) {
     res = PolyAddCoeffToMonos(p, PolyGetCoeff(q));
   } else {
+    res.size = 0;
     size_t p_size = PolyGetSize(p), q_size = PolyGetSize(q);
     size_t p_i = 0, q_i = 0;
     while (p_i < p_size && q_size > q_i) {
-      assert(p_i == 0 || MonoGetExp(&p->arr[p_i]) >= MonoGetExp(&p->arr[p_i - 1]));
-      assert(q_i == 0 || MonoGetExp(&q->arr[q_i]) >= MonoGetExp(&q->arr[q_i - 1]));
+      assert(p_i == 0 || MonoGetExp(&p->arr[p_i]) > MonoGetExp(&p->arr[p_i - 1]));
+      assert(q_i == 0 || MonoGetExp(&q->arr[q_i]) > MonoGetExp(&q->arr[q_i - 1]));
       if (MonoGetExp(&p->arr[p_i]) == MonoGetExp(&q->arr[q_i])) {
         p_i++;
         q_i++;
@@ -286,6 +287,7 @@ Poly PolyAdd(const Poly *p, const Poly *q) {
       res.arr[i++] = MonoClone(&p->arr[p_i++]);
     while (q_i < q_size)
       res.arr[i++] = MonoClone(&q->arr[q_i++]);
+    PolyPrint(&res);
   }
     /*
     res = PolyMergeTwoPolys(p, q);
