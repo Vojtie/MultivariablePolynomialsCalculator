@@ -1,0 +1,47 @@
+/**
+@mainpage Dokumentacja zadania wielomiany
+
+### Treść zadania
+
+Uwaga: aktualna treść zadania znajduje się w [Moodle](https://moodle.mimuw.edu.pl).
+
+### Opis programu
+
+Tegoroczne duże zadanie polega na zaimplementowaniu operacji na wielomianach
+rzadkich wielu zmiennych.
+
+## Wielomiany
+
+Zmienne wielomianu oznaczamy @f$x_0, x_1, x_2@f$ itd. Definicja wielomianu jest rekurencyjna.
+Wielomian jest sumą jednomianów postaci @f$px^n_0@f$, gdzie n jest wykładnikiem tego jednomianu będącym
+nieujemną liczbą całkowitą, a p jest współczynnikiem, który jest wielomianem.
+Rekurencja kończy się, gdy współczynnik jest liczbą (czyli wielomianem stałym), a nie sumą
+kolejnych jednomianów. Wielomiany są rzadkie, co oznacza, że stopień wielomianu może być znacznie większy
+niż liczba składowych jednomianów.
+
+## Implementacja wielomianu
+
+Wielomian jest zaimplementowany za pomocą typu strukturalnego <Poly>.
+Wielomian może być liczbą całkowitą, czyli wielomianem stałym lub listą jednomianów,
+które są zaimplementowane za pomocą typu strukturalnego <Mono>.
+Na jednomian składa się wartość jego wykładnika oraz współczynnik jednomianu, który jest wielomianem.
+
+## Główne funkcjonalności interfejsu
+
+Do zaimplementowanych operacji na wielomianach należą między innymi:
+
+- operacja dodawania/odejmowania/mnożenia dwóch wielomianów
+- sprawdzenie równości dwóch wielomianów
+- obliczenie stopnia wielomianu
+- obliczenie stopnia wielomianu ze względu na zadaną zmienną
+- obliczenie wartości wielomianu w danym punkcie
+
+## Uwagi co do dalszego rozwoju projektu
+
+Konwencje przyjęte w projekcie:
+
+- zaznaczanie co jest właścicielem obiektu (na właściciela obiektu spada odpowiedzialność
+  za zwolnienie używanej przez niego pamięci)
+- przekazywanie argumentów przez zmienną
+- otrzymywanie wyniku funkcji na własność obiektu, który tą funkcję woła
+*/
