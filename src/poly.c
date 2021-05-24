@@ -234,10 +234,6 @@ Poly PolyAdd(const Poly *p, const Poly *q) {
     res = PolyAddMonos(res.size, res.arr);
     free(temp);
   }
-  /*
-  PolyPrint(&res);
-  printf("\n");
-   */
   return res;
 }
 
@@ -626,8 +622,12 @@ Poly PolySimplify(Poly *p) {
     res.arr = PolyGetArr(p);
     if (PolyIsCoeff(p))
       res.coeff = PolyGetCoeff(p);
-    else
-      res.size = PolyGetSize(p);
+    else {
+      size_t size = PolyGetSize(p);
+      for (size_t i = 0; i < size; i++)
+        res.arr[i].p = PolySimplify(MonoGetPtrToPoly(&res.arr[i]));
+      res.size = size;
+    }
   } /*
   printf("after simplifying:\t");
   PolyPrint(&res);
