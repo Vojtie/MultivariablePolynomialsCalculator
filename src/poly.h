@@ -163,6 +163,13 @@ static inline Mono MonoClone(const Mono *m) {
 }
 
 /**
+ * Alokuje pamięć dla tablicy jednomianów.
+ * @param count : liczba jednomianów
+ * @return tablica jednomianów
+ */
+Mono *AllocMemForMonos(size_t count);
+
+/**
  * Dodaje dwa wielomiany.
  * @param[in] p : wielomian @f$p@f$
  * @param[in] q : wielomian @f$q@f$

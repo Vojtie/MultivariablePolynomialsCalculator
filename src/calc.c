@@ -1,3 +1,6 @@
+#ifndef POLYNOMIALS_CALC_C
+#define POLYNOMIALS_CALC_C
+
 #include <stdio.h>
 #include <stdlib.h>
 #include "calc.h"
@@ -229,3 +232,5 @@ int main() {
   StackFree(s);
   return 0;
 }
+
+#endif //POLYNOMIALS_CALC_C

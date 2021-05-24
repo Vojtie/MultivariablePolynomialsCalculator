@@ -1,26 +1,33 @@
 #ifndef POLYNOMIALS_PARSER_C
 #define POLYNOMIALS_PARSER_C
 
+#include <stdio.h>
+#include <limits.h>
+#include <errno.h>
+#include <stdlib.h>
 #include "parser.h"
+#include "poly.h"
 
 #define DEF_ALLOC_SIZE 32
 #define DEF_ALLOC_COEFF 2
 
 /**
- * czy może tak być że ReadLine skończy wczytywać przed EOF i następne wywołanie
- * się scrashuje
+ * Sprawdza czy alokacja pamięci się powiodła.
+ * Jeśli nie to kończy program awaryjnie kodem 1.
+ * @param[in] pointer : wskaźnik
  */
-static void CheckAlloc(const void *pocharer) {
-  if (!pocharer)
+static void CheckAlloc(const void *pointer) {
+  if (!pointer)
     exit(1);
 }
 
-static Mono *AllocMemForMonos(size_t count) {
-  Mono *res = calloc(count, sizeof(*res));
-  CheckAlloc(res);
-  return res;
-}
-
+/**
+ * Zwiększa pamięć zaalokowaną
+ * dla tablicy jednomianów @p monos.
+ * @param monos : tablica jednomianów
+ * @param size : rozmiar tablicy
+ * @return wskaźnik na pierwszy element tablicy
+ */
 static Mono *IncreaseMemForMonos(Mono *monos, size_t *size) {
   *size *= DEF_ALLOC_COEFF;
   Mono *res = realloc(monos, *size * sizeof *res);
@@ -28,20 +35,41 @@ static Mono *IncreaseMemForMonos(Mono *monos, size_t *size) {
   return res;
 }
 
+/**
+ * Konwertuje napis na współczynnik
+ * wielomianu (stałą).
+ * @param string : napis
+ * @return współczynnik wielomianu
+ */
 poly_coeff_t StrToCoeff(char **string) {
   assert(string && *string);
   return strtol(*string, string, 10);
 }
 
+/**
+ * Konwertuje napis na wykładnik
+ * jednomianu.
+ * @param string : napis
+ * @return wykładnik
+ */
 poly_exp_t StrToExp(char **string) {
   assert(string && *string);
   return strtol(*string, string, 10);
 }
 
+/**
+ * Konwertuje napis na wielomian.
+ * @param string : napis
+ * @return wielomian
+ */
 static Poly StrToPoly(char **string);
 
+/**
+ * Konwertuje napis na jednomian.
+ * @param string : napis
+ * @return jednomian
+ */
 static Mono StrToMono(char **string) {
-  //assert(string && *string && **string == '(');
   Mono res;
   (*string)++;
   res.p = StrToPoly(string);
@@ -53,9 +81,7 @@ static Mono StrToMono(char **string) {
   (*string)++;
   return res;
 }
-/**
- *
- **/
+
 static Poly StrToPoly(char **string) {
   assert(string && *string);
   Poly res;
@@ -78,7 +104,7 @@ static Poly StrToPoly(char **string) {
       free(monos);
     }
     else {
-      assert(i == 1); // nie dostaje pustych linii (sam '+' ?)
+      assert(i == 1);
       res = PolyFromMonos(monos, i);
       res = PolyDelZeros(&res);
     }
@@ -90,33 +116,23 @@ static Poly StrToPoly(char **string) {
   return res;
 }
 
-
-/*
-static Line AllocMemForLine() {
-  Line res;
-  res.chars = calloc(DEF_ALLOC_SIZE, sizeof res.chars);
-  CheckAlloc(res.chars);
-  res.size = DEF_ALLOC_SIZE;
-  res.type = EMPTY_LINE;
-  res.last_index = 0;
-  res.is_correct = true;
-  res.is_eof = false;
-  return res;
-}
-
-static void IncreaseLineSize(Line *line) {
-  line->size *= DEF_ALLOC_COEFF;
-  line->chars = realloc(line->chars, sizeof(line->chars) * line->size);
-  CheckAlloc(line->chars);
-}
-*/
-
+/**
+ * Sprawdza czy znak przedstawia liczbę.
+ * @param ch : znak
+ * @return Czy znak jest liczbą?
+ */
 static bool IsNumber(char ch) {
   return ch >= '0' && ch <= '9';
 }
 
+/**
+ * Wczytuje z wiersza
+ * argument polecenia DegBy.
+ * @param line : wiersz
+ * @param arg_i : położenie argumentu w wierszu
+ * @return argument polecenia DegBy
+ */
 static deg_by_arg_t ReadDegByArg(Line *line, size_t arg_i) {
-  assert(line->error_type = NONE_ERR);
   deg_by_arg_t res;
   errno = 0;
   char *endptr = NULL;
@@ -126,8 +142,14 @@ static deg_by_arg_t ReadDegByArg(Line *line, size_t arg_i) {
   return res;
 }
 
+/**
+ * Wczytuje z wiersza
+ * argument polecenia At.
+ * @param line : wiersz
+ * @param arg_i : położenie argumentu w wierszu
+ * @return argument polecenia At
+ */
 static at_arg_t ReadAtArg(Line *line, size_t arg_i) {
-  assert(line->error_type = NONE_ERR);
   at_arg_t res;
   errno = 0;
   char *endptr = NULL;
@@ -137,6 +159,13 @@ static at_arg_t ReadAtArg(Line *line, size_t arg_i) {
   return res;
 }
 
+/**
+ * Zwraca polecenie z wiersza
+ * lub w przypadku niepowodzenia
+ * ustawia odpowiedni błąd.
+ * @param line : wiersz
+ * @return polecenie
+ */
 static Command ReadCommand(Line *line) {
   assert(line->type == OPER);
   Command res;
@@ -189,18 +218,38 @@ static Command ReadCommand(Line *line) {
     line->error_type = WR_COMMAND;
   return res;
 }
-/*
-static bool IsCorrectOperChar(char ch) {
-  return (IsNumber(ch) || (ch >= 'A' && ch <= 'Z') || ch == '-' || ch == '_');
-}
-*/
+
+/**
+ * Sprawdza czy znak jest znakiem
+ * oznaczającym wiersz z poleceniem.
+ * @param ch
+ * @return Czy znak oznacza wiersz z poleceniem?
+ */
 static bool IsOperLine(int ch) {
   return (ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z');
 }
 
+/**
+ * Sprawdza czy znak jest znakiem
+ * oznaczającym wiersz ignorowany
+ * lub pusty.
+ * @param ch
+ * @return czy znak jest znakiem
+ * oznaczającym wiersz ignorowany
+ * lub pusty?
+ */
 static bool IsIgnoredLine(int ch) {
   return ch == '#' || ch == EOF || ch =='\n';
 }
+
+/**
+ * Sprawdza czy znak @p ch na podstawie
+ * poprzedniego wczytanego znaku @p last_ch
+ * jest poprawnym znakiem wiersza z wielomianem.
+ * @param last_ch : ostatni wczytany znak
+ * @param ch : znak
+ * @return Czy znak jest poprawnym znakiem wiersza z wielomianem?
+ */
 static bool IsCorrectPolyChar(char last_ch, char ch) {
   bool res = true;
   if (last_ch == '(' && ch != '(' && !IsNumber(ch) && ch != '-')
@@ -218,7 +267,13 @@ static bool IsCorrectPolyChar(char last_ch, char ch) {
   return res;
 }
 
-// akceptuje wiodące zera
+/**
+ * Sprawdza czy napis zawiera w
+ * sobie poprawny zapis wielomianu.
+ * @param str : napis
+ * @param str_size : długość napisu
+ * @return czy napis zawiera w sobie poprawny wielomian?
+ */
 static bool IsCorrectPoly(char *str, size_t str_size) {
   assert(str && str_size > 0);
   bool is_correct = true;
@@ -246,15 +301,12 @@ static bool IsCorrectPoly(char *str, size_t str_size) {
   else is_correct = false;
   return is_correct;
 }
-/*
-static Poly ConvertLineToPoly(char *str, size_t str_size) {
-  if (IsCorrectPoly(str, str_size) && HasCorrectNumbers((char *) str, str_size)) {
-    line->p = StrToPoly(&str);
-  }
-  else line->error_type = WR_POLY;
-}
-*/
 
+/**
+ * Zwraca nową strukturę
+ * przechowującą wiersz.
+ * @return obiekt struktury przechowującej wiersz
+ */
 static Line NewLine() {
   Line res;
   res.chars = malloc(DEF_ALLOC_SIZE * sizeof(*res.chars));
@@ -266,12 +318,23 @@ static Line NewLine() {
   return res;
 }
 
+/**
+ * Zwiększa pamięć zaalokowaną
+ * na obiekt struktury
+ * przechowującej wiersz.
+ * @param line : wiersz
+ */
 static void IncreaseLineSize(Line *line) {
   line->chars = realloc(line->chars, DEF_ALLOC_COEFF * line->size * sizeof(*line->chars));
   CheckAlloc(line->chars);
   line->size *= DEF_ALLOC_COEFF;
 }
 
+/**
+ * Zwraca wczytany ze standardowego
+ * wejścia wiersz.
+ * @return wiersz
+ */
 static Line ReadLine() {
   Line res;
   int ch = getchar();
@@ -298,6 +361,13 @@ static Line ReadLine() {
   return res;
 }
 
+/**
+ * Sprawdza czy napis zawiera
+ * w sobie dozwolone liczby.
+ * @param str : napis
+ * @param str_size : długość napisu
+ * @return Czy napis zawiera poprawne liczby?
+ */
 static bool HasCorrectNumbers(char *str, size_t str_size) {
   errno = 0;
   bool correct = true;
@@ -333,9 +403,6 @@ Line GetNextLine() {
   }
   else if (res.type == OPER)
     res.c = ReadCommand(&res);
-  //else res.
-  //if (res.error_type != NONE_ERR)
-    //FreeUncorrectLine(&res);
   return res;
 }
 

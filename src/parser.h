@@ -41,6 +41,13 @@ typedef struct Line {
     };
 } Line;
 
+/**
+ * Wczytuje i zwraca następny
+ * wiersz w postaci obiektu
+ * struktury przechowującej
+ * wiersz.
+ * @return obiekt struktury przechowującej wiersz.
+ */
 Line GetNextLine();
 
 #endif //POLYNOMIALS_PARSER_H

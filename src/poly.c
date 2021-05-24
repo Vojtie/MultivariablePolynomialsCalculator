@@ -1,3 +1,6 @@
+#ifndef POLYNOMIALS_POLY_C
+#define POLYNOMIALS_POLY_C
+
 #include <stdlib.h>
 #include <stdio.h>
 #include "poly.h"
@@ -77,12 +80,7 @@ void PolyDestroy(Poly *p) {
   }
 }
 
-/**
- * Alokuje pamięć dla tablicy jednomianów.
- * @param count : liczba jednomianów
- * @return tablica jednomianów
- */
-static Mono *AllocMemForMonos(size_t count) {
+Mono *AllocMemForMonos(size_t count) {
   Mono *res = calloc(count, sizeof(*res));
   CheckAlloc(res);
   return res;
@@ -597,3 +595,5 @@ void PolyPrint(const Poly *p) {
     printf(",%d)", MonoGetExp(&p->arr[p_size - 1]));
   }
 }
+
+#endif //POLYNOMIALS_POLY_C

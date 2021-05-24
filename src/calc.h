@@ -6,6 +6,9 @@
   @date 2021
 */
 
+#ifndef POLYNOMIALS_CALC_H
+#define POLYNOMIALS_CALC_C
+
 #include <stddef.h>
 #include "parser.h"
 #include "stack.h"
@@ -147,3 +150,5 @@ static void Pop(Stack *s);
  * @param command : polecenie
  */
 static void PerformCommand(Stack *s, Command command);
+
+#endif //POLYNOMIALS_CALC_C
