@@ -139,14 +139,24 @@ static Poly PolyAddCoeffToMonos(const Poly *p, poly_coeff_t coeff) {
     res = PolyClone(p);
   }
   else if (MonoGetExp(&p->arr[0]) == 0) {
-    res.arr = AllocMemForMonos(PolyGetSize(p));
-    res.size = PolyGetSize(p);
-    for (size_t i = 1; i < res.size; i++)
-      res.arr[i] = MonoClone(&p->arr[i]);
-    if (PolyIsCoeff(MonoGetPtrToPoly(&p->arr[0])))
-      res.arr[0].p = PolyFromCoeff(coeff + PolyGetCoeff(MonoGetPtrToPoly(&p->arr[0])));
-    else
-      res.arr[0].p = PolyAddCoeffToMonos(MonoGetPtrToPoly(&p->arr[0]), coeff);
+    if (PolyIsCoeff(MonoGetPtrToPoly(&p->arr[0])) && coeff + PolyGetCoeff(MonoGetPtrToPoly(&p->arr[0])) == 0) {
+      assert(PolyGetSize(p) > 1);
+      res.size = PolyGetSize(p) - 1;
+      res.arr = AllocMemForMonos(res.size);
+      for (size_t i = 0; i < res.size; i++)
+        res.arr[i] = MonoClone(&p->arr[i + 1]);
+    }
+    else {
+      res.arr = AllocMemForMonos(PolyGetSize(p));
+      res.size = PolyGetSize(p);
+      for (size_t i = 1; i < res.size; i++)
+        res.arr[i] = MonoClone(&p->arr[i]);
+      if (PolyIsCoeff(MonoGetPtrToPoly(&p->arr[0])))
+        res.arr[0].p = PolyFromCoeff(coeff + PolyGetCoeff(MonoGetPtrToPoly(&p->arr[0])));
+      else
+        res.arr[0].p = PolyAddCoeffToMonos(MonoGetPtrToPoly(&p->arr[0]), coeff);
+      res.arr[0].exp = 0;
+    }
   }
   else {
     res.size = PolyGetSize(p) + 1;
