@@ -252,14 +252,32 @@ Poly PolyAt(const Poly *p, poly_coeff_t x);
 Poly PolyDelZeros(Poly *p);
 
 /**
- * uzupełnić
+ * Jeśli wielomian @p p składa się z samych (po jednym
+ * na stopień zagłębienia wielomianu) jednomianów
+ * o wykładnikach równych zero, to zamienia go na
+ * wielomian, który jest współczynnikiem.
+ * Przejmuje na własność wielomian @p p.
+ * @param p : wielomian
+ * @return uproszczony lub niezmieniony wielomian
  */
 Poly PolySimplify(Poly *p);
 
+/**
+ * Upraszcza lub pozostawia bez zmian wielomian
+ * @p p poprzez zamienienie (o ile to możliwe)
+ * jednomianów o zerowych wykładnikach na wielomiany,
+ * które są współczynnikami.
+ * Przejmuje na własność wielomian @p p.
+ * @param p : wielomian
+ * @return uproszczony lub niezmieniony wielomian
+ */
 Poly PolySimplifyRec(Poly *p);
 
-
+/**
+ * Wypisuje na standardowe wyjście
+ * wielomian @p p.
+ * @param p : wielomian
+ */
 void PolyPrint(const Poly *p);
 
-bool PolysAreEq(const Poly *p, const Poly *q);
 #endif /* __POLY_H__ */

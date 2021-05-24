@@ -116,7 +116,7 @@ static void Sub(Stack *s) {
 
 static void IsEq(Stack *s) {
   if (CanPerformOp(IS_EQ, s))
-    printf("%d\n", PolysAreEq(StackPeekFirst(s), StackPeekSecond(s)) ? 1 : 0);
+    printf("%d\n", PolyIsEq(StackPeekFirst(s), StackPeekSecond(s)) ? 1 : 0);
 }
 
 static void Deg(Stack *s) {

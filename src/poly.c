@@ -288,12 +288,6 @@ Poly PolyAdd(const Poly *p, const Poly *q) {
     while (q_i < q_size)
       res.arr[i++] = MonoClone(&q->arr[q_i++]);
   }
-    /*
-    res = PolyMergeTwoPolys(p, q);
-    Mono *temp = PolyGetArr(&res);
-    res = PolyAddMonos(res.size, res.arr);
-    free(temp);
-    */
   if (!PolyIsCoeff(&res))
     res = PolyDelZeros(&res);
   return PolySimplify(&res);
@@ -384,81 +378,7 @@ Poly PolyAddMonos(size_t count, const Mono monos[]) {
   }
 }
 
-/**
- * Sprawdza równość posortowanych tablic
- * jednomianów wielomianów @p p i @p q.
- * @param p_monos : tablica jednomianów
- * @param p_size : liczba jednomianów
- * @param q_monos : tablica jednomianów
- * @param q_size : liczba jednomianów
- * @return @f$p = q@f$
- */
- /*
-static bool MonosAreEq(Mono p_monos[], size_t p_size, Mono q_monos[], size_t q_size) {
-  assert(p_monos && q_monos);
-  size_t p_i, q_i;
-  for (p_i = 0, q_i = 0; p_i < p_size && q_size > q_i; p_i++, q_i++) {
-    assert(p_i == 0 || MonoGetExp(&p_monos[p_i]) >= MonoGetExp(&q_monos[p_i - 1]));
-    assert(q_i == 0 || MonoGetExp(&q_monos[q_i]) >= MonoGetExp(&q_monos[q_i - 1]));
-    while (p_i < p_size && PolyIsZero(MonoGetPtrToPoly(&p_monos[p_i])))
-      p_i++;
-    while (q_i < q_size && PolyIsZero(MonoGetPtrToPoly(&q_monos[q_i])))
-      q_i++;
-    if (p_i < p_size && q_size > q_i && ((MonoGetExp(&p_monos[p_i]) != MonoGetExp(&q_monos[q_i]))
-        || (!PolyIsEq(MonoGetPtrToPoly(&p_monos[p_i]), MonoGetPtrToPoly(&q_monos[q_i])))))
-      return false;
-  }
-  while (p_i < p_size) {
-    if (!PolyIsZero(&p_monos[p_i].p))
-      return false;
-    p_i++;
-  }
-  while (q_i < q_size) {
-    if (!PolyIsZero(MonoGetPtrToPoly(&q_monos[q_i])))
-      return false;
-    q_i++;
-  }
-  return true;
-}
-
 bool PolyIsEq(const Poly *p, const Poly *q) {
-  assert(p && q);
-  bool res = false;
-  if (PolyIsCoeff(p) && PolyIsCoeff(q)) {
-    res = PolyGetCoeff(p) == PolyGetCoeff(q);
-  } else if ((!PolyIsCoeff(p) && !PolyIsCoeff(q))) {
-    Poly p_clone = PolyClone(p), q_clone = PolyClone(q);
-    //rSortPoly(p);
-    //SortPoly(q);
-    res = MonosAreEq(PolyGetArr(&p_clone), PolyGetSize(&p_clone), PolyGetArr(&q_clone), PolyGetSize(&q_clone));
-    PolyDestroy(&p_clone);
-    PolyDestroy(&q_clone);
-  } else if (!PolyIsCoeff(p) && PolyIsCoeff(q)) {
-    Mono q_mono = MonoFromPoly(q, 0);
-    Poly p_clone = PolyClone(p);
-    //SortPoly(p);
-    res = MonosAreEq(PolyGetArr(&p_clone), PolyGetSize(&p_clone), &q_mono, 1);
-    PolyDestroy(&p_clone);
-  } else if (PolyIsCoeff(p) && !PolyIsCoeff(q)) {
-    Mono p_mono = MonoFromPoly(p, 0);
-    Poly q_clone = PolyClone(q);
-    //q_clone = PolyDelZeros(&q_clone);
-    if (PolyIsCoeff(&q_clone))
-      res = PolyGetCoeff(&q_clone) == PolyGetCoeff(p);
-    else if (PolyGetSize(&q_clone) != 1)
-      res = false;
-    else {
-      for (size_t i = 0; i < PolyGetSize(&q_clone); i++)
-        if (Moq_clone.arr[i])
-    }
-    SortPoly(q);
-    res = MonosAreEq(PolyGetArr(&q_clone), PolyGetSize(&q_clone), &p_mono, 1);
-    PolyDestroy(&q_clone);
-  }
-  return res;
-}*/
-// sa posortowane i bez zerowych i bez pojedynczych exp 0
-bool PolysAreEq(const Poly *p, const Poly *q) {
   assert(p && q);
   bool res = true;
   if (PolyIsCoeff(p) && PolyIsCoeff(q))
@@ -476,7 +396,7 @@ bool PolysAreEq(const Poly *p, const Poly *q) {
   else if (PolyGetSize(p) == PolyGetSize(q)) {
     size_t size = PolyGetSize(p);
     for (size_t i = 0; res && i < size; i++)
-      if (!PolysAreEq(MonoGetPtrToPoly(&p->arr[0]), MonoGetPtrToPoly(&q->arr[0]))
+      if (!PolyIsEq(MonoGetPtrToPoly(&p->arr[0]), MonoGetPtrToPoly(&q->arr[0]))
           || MonoGetExp(&p->arr[0]) != MonoGetExp(&q->arr[0]))
         res = false;
   }
@@ -665,9 +585,7 @@ Poly PolyAt(const Poly *p, poly_coeff_t x) {
   }
   return res;
 }
-// zamienia wiel z samymi exp = 0 na coeff
-//przejmuje na własność @p p
-// moze zmienic na void
+
 Poly PolySimplify(Poly *p) {
   Poly res, *temp = p;
   while (!PolyIsCoeff(temp) && PolyGetSize(temp) == 1 && MonoGetExp(&temp->arr[0]) == 0)
