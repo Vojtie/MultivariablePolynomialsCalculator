@@ -13,13 +13,6 @@
 #include <stdlib.h>
 #include "calc.h"
 
-/**
- * wydzielić funkcję w PolyAdd
- * czy powinniśmy wszędzie dodać assert(ptr)
- * czy line_num może być globalne
- * sprawdzić czy headery które nawzajem się includują, mimo to są zaincludowane w .c w których są potrzebne
- * zamienić wywołania PolySimplifyRec z poly.c na tutaj
- */
 static size_t line_num = 1;
 
 static void PrintError(Error error_type) {
