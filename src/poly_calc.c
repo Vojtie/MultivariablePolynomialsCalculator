@@ -207,17 +207,17 @@ int main() {
   Stack *s = NewStack();
   do {
     line = GetNextLine();
+    LineType type = line.type;
     if ((err = line.error_type) != NONE_ERR)
       PrintError(err);
     else {
-      LineType type = line.type;
       if (type == POLY)
         StackPush(s, line.p);
       else if (type == OPER)
         PerformCommand(s, line.c);
-      if (type != EMPTY)
-        free(line.chars);
     }
+    if (type != EMPTY)
+      free(line.chars);
     line_num++;
   }
   while (!line.is_eof);
