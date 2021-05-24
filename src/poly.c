@@ -140,6 +140,7 @@ static Poly PolyAddCoeffToMonos(const Poly *p, poly_coeff_t coeff) {
   }
   else if (MonoGetExp(&p->arr[0]) == 0) {
     res.arr = AllocMemForMonos(PolyGetSize(p));
+    res.size = PolyGetSize(p);
     for (size_t i = 1; i < res.size; i++)
       res.arr[i] = MonoClone(&p->arr[i]);
     if (PolyIsCoeff(MonoGetPtrToPoly(&p->arr[0])))
@@ -234,14 +235,57 @@ Poly PolyAdd(const Poly *p, const Poly *q) {
   } else if (PolyIsCoeff(q)) {
     res = PolyAddCoeffToMonos(p, PolyGetCoeff(q));
   } else {
-    res = PolyMergeTwoPolys(p, q);
+    size_t p_size = PolyGetSize(p), q_size = PolyGetSize(q);
+    size_t p_i = 0, q_i = 0;
+    while (p_i < p_size && q_size > q_i) {
+      assert(p_i == 0 || MonoGetExp(&p->arr[p_i]) >= MonoGetExp(&p->arr[p_i - 1]));
+      assert(q_i == 0 || MonoGetExp(&q->arr[q_i]) >= MonoGetExp(&q->arr[q_i - 1]));
+      if (MonoGetExp(&p->arr[p_i]) == MonoGetExp(&q->arr[q_i])) {
+        p_i++;
+        q_i++;
+      } else if (MonoGetExp(&p->arr[p_i]) > MonoGetExp(&q->arr[q_i]))
+        q_i++;
+      else p_i++;
+      res.size++;
+    }
+    while (p_i < p_size) {
+      res.size++;
+      p_i++;
+    }
+    while (q_i < q_size) {
+      res.size++;
+      q_i++;
+    }
+    res.arr = AllocMemForMonos(res.size);
+    size_t i = 0;
+    for (p_i = 0, q_i = 0; p_i < p_size && q_size > q_i; i++) {
+      if (MonoGetExp(&p->arr[p_i]) == MonoGetExp(&q->arr[q_i])) {
+        res.arr[i].exp = MonoGetExp(&p->arr[p_i]);
+        res.arr[i].p = PolyAdd(MonoGetPtrToPoly(&p->arr[p_i]), MonoGetPtrToPoly(&q->arr[q_i]));
+        p_i++;
+        q_i++;
+      } else if (MonoGetExp(&p->arr[p_i]) > MonoGetExp(&q->arr[q_i])) {
+        res.arr[i] = MonoClone(&q->arr[q_i]);
+        q_i++;
+      } else {
+        res.arr[i] = MonoClone(&p->arr[p_i]);
+        p_i++;
+      }
+    }
+    while (p_i < p_size)
+      res.arr[i++] = MonoClone(&p->arr[p_i++]);
+    while (q_i < q_size)
+      res.arr[i++] = MonoClone(&q->arr[q_i++]);
   }
-  if (!PolyIsCoeff(&res)) {
+    /*
+    res = PolyMergeTwoPolys(p, q);
     Mono *temp = PolyGetArr(&res);
     res = PolyAddMonos(res.size, res.arr);
     free(temp);
-  }
-  return res;
+    */
+  if (!PolyIsCoeff(&res))
+    res = PolyDelZeros(&res);
+  return PolySimplify(&res);
 }
 
 /**
