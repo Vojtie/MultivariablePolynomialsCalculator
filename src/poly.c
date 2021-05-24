@@ -335,6 +335,7 @@ Poly PolyAddMonos(size_t count, const Mono monos[]) {
  * @param q_size : liczba jednomianów
  * @return @f$p = q@f$
  */
+ /*
 static bool MonosAreEq(Mono p_monos[], size_t p_size, Mono q_monos[], size_t q_size) {
   assert(p_monos && q_monos);
   size_t p_i, q_i;
@@ -350,7 +351,7 @@ static bool MonosAreEq(Mono p_monos[], size_t p_size, Mono q_monos[], size_t q_s
       return false;
   }
   while (p_i < p_size) {
-    if (!PolyIsZero(MonoGetPtrToPoly(&p_monos[p_i])))
+    if (!PolyIsZero(&p_monos[p_i].p))
       return false;
     p_i++;
   }
@@ -369,24 +370,59 @@ bool PolyIsEq(const Poly *p, const Poly *q) {
     res = PolyGetCoeff(p) == PolyGetCoeff(q);
   } else if ((!PolyIsCoeff(p) && !PolyIsCoeff(q))) {
     Poly p_clone = PolyClone(p), q_clone = PolyClone(q);
-    SortPoly(p);
-    SortPoly(q);
+    //rSortPoly(p);
+    //SortPoly(q);
     res = MonosAreEq(PolyGetArr(&p_clone), PolyGetSize(&p_clone), PolyGetArr(&q_clone), PolyGetSize(&q_clone));
     PolyDestroy(&p_clone);
     PolyDestroy(&q_clone);
   } else if (!PolyIsCoeff(p) && PolyIsCoeff(q)) {
     Mono q_mono = MonoFromPoly(q, 0);
     Poly p_clone = PolyClone(p);
-    SortPoly(p);
+    //SortPoly(p);
     res = MonosAreEq(PolyGetArr(&p_clone), PolyGetSize(&p_clone), &q_mono, 1);
     PolyDestroy(&p_clone);
   } else if (PolyIsCoeff(p) && !PolyIsCoeff(q)) {
     Mono p_mono = MonoFromPoly(p, 0);
     Poly q_clone = PolyClone(q);
+    //q_clone = PolyDelZeros(&q_clone);
+    if (PolyIsCoeff(&q_clone))
+      res = PolyGetCoeff(&q_clone) == PolyGetCoeff(p);
+    else if (PolyGetSize(&q_clone) != 1)
+      res = false;
+    else {
+      for (size_t i = 0; i < PolyGetSize(&q_clone); i++)
+        if (Moq_clone.arr[i])
+    }
     SortPoly(q);
     res = MonosAreEq(PolyGetArr(&q_clone), PolyGetSize(&q_clone), &p_mono, 1);
     PolyDestroy(&q_clone);
   }
+  return res;
+}*/
+// sa posortowane i bez zerowych i bez pojedynczych exp 0
+bool PolysAreEq(const Poly *p, const Poly *q) {
+  assert(p && q);
+  bool res = true;
+  if (PolyIsCoeff(p) && PolyIsCoeff(q))
+    res = PolyGetCoeff(p) == PolyGetCoeff(q);
+  else if (!PolyIsCoeff(p) && PolyIsCoeff(q)) {
+    if (PolyGetSize(p) == 1 && MonoGetExp(&p->arr[0]) == 0)
+      res = PolyGetCoeff(MonoGetPtrToPoly(&p->arr[0])) == PolyGetCoeff(q);
+    else res = false;
+  }
+  else if (PolyIsCoeff(p) && !PolyIsCoeff(q)) {
+    if (PolyGetSize(q) == 1 && MonoGetExp(&q->arr[0]) == 0)
+      res = PolyGetCoeff(MonoGetPtrToPoly(&q->arr[0])) == PolyGetCoeff(p);
+    else res = false;
+  }
+  else if (PolyGetSize(p) == PolyGetSize(q)) {
+    size_t size = PolyGetSize(p);
+    for (size_t i = 0; res && i < size; i++)
+      if (!PolysAreEq(MonoGetPtrToPoly(&p->arr[0]), MonoGetPtrToPoly(&q->arr[0]))
+          || MonoGetExp(&p->arr[0]) != MonoGetExp(&q->arr[0]))
+        res = false;
+  }
+  else res = false;
   return res;
 }
 

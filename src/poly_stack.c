@@ -66,27 +66,6 @@ Poly *StackPeekFirst(Stack *s) {
   assert(s && !StackIsEmpty(s));
   return &s->polys[s->top];
 }
-/**
- *
-static bool IsCorrectPolyChar(int last_ch, int ch) {
-  bool res = true;
-  if (ch != '(' && ch != ')' && ch != ',' && ch != '-' && ch != '+' && !IsNumber(ch))
-    res = false;
-  else if (last_ch == '(' && (ch == ',' || ch == ')' || ch == '+'))//ch != '(' && !IsNumber(ch) && ch != '-'))
-    res = false;
-  else if (last_ch == ',' && (ch == '(' || ch == ')' || ch == '+'))// !IsNumber(ch) && ch != '-')
-    res = false;
-  else if (last_ch == ')' && (ch == ''))//ch != ',' && ch != '+')
-    res = false;
-  else if (last_ch == '-' && !IsNumber(ch))
-    res = false;
-  else if (IsNumber(last_ch) && !IsNumber(ch) && ch != ',' && ch != ')')
-    res = false;
-  else if (last_ch == '+' && ch != '(')
-    res = false;
-  return res;
-}
- */
 
 Poly *StackPeekSecond(Stack *s) {
   assert(s && !StackIsEmpty(s));

@@ -258,4 +258,5 @@ Poly PolySimplify(Poly *p);
 
 void PolyPrint(const Poly *p);
 
+bool PolysAreEq(const Poly *p, const Poly *q);
 #endif /* __POLY_H__ */

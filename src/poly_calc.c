@@ -116,7 +116,7 @@ static void Sub(Stack *s) {
 
 static void IsEq(Stack *s) {
   if (CanPerformOp(IS_EQ, s))
-    printf("%d\n", PolyIsEq(StackPeekFirst(s), StackPeekSecond(s)) ? 1 : 0);
+    printf("%d\n", PolysAreEq(StackPeekFirst(s), StackPeekSecond(s)) ? 1 : 0);
 }
 
 static void Deg(Stack *s) {
@@ -223,36 +223,3 @@ int main() {
   while (!line.is_eof);
   StackFree(s);
 }
-
-/**
-int main() {
-  Line line;
-  Stack *s = NewStack();
- do {
-   line = ReadLine();
-   if (line.is_correct) {
-     char *string = line.chars;
-     if (line.type == POLY_LINE) {
-       CheckLimits(&line);
-       if (line.is_correct)
-         Push(s, StrToPoly(&line.chars));
-       else
-         PrintError(line.error_type);
-     }
-     else if (line.type == OPER_LINE) {
-       Command command = ReadCommand(&line);
-       if (line.is_correct)
-         PerformCommand(s, command);
-       else
-         PrintError(line.error_type);
-     }
-     free(string);
-   }
-   else PrintError(line.error_type);
-   line_num++;
- }
- while (!line.is_eof);
- StackFree(s);
- return (0);
-}
- */
