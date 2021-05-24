@@ -607,10 +607,6 @@ Poly PolyAt(const Poly *p, poly_coeff_t x) {
 //przejmuje na własność @p p
 // moze zmienic na void
 Poly PolySimplify(Poly *p) {
-  /*
-  printf("before simplifying:\t");
-  PolyPrint(p);
-  printf("\n");*/
   Poly res, *temp = p;
   while (!PolyIsCoeff(temp) && PolyGetSize(temp) == 1 && MonoGetExp(&temp->arr[0]) == 0)
     temp = &temp->arr[0].p;
@@ -622,16 +618,20 @@ Poly PolySimplify(Poly *p) {
     res.arr = PolyGetArr(p);
     if (PolyIsCoeff(p))
       res.coeff = PolyGetCoeff(p);
-    else {
-      size_t size = PolyGetSize(p);
-      for (size_t i = 0; i < size; i++)
-        res.arr[i].p = PolySimplify(MonoGetPtrToPoly(&res.arr[i]));
-      res.size = size;
-    }
-  } /*
-  printf("after simplifying:\t");
-  PolyPrint(&res);
-  printf("\n"); */
+    else
+      res.size = PolyGetSize(p);
+  }
+  return res;
+}
+
+Poly PolySimplifyRec(Poly *p) {
+  Poly res = PolySimplify(p);
+  if (!PolyIsCoeff(&res)) {
+    size_t size = PolyGetSize(p);
+    for (size_t i = 0; i < size; i++)
+      res.arr[i].p = PolySimplifyRec(MonoGetPtrToPoly(&res.arr[i]));
+    res.size = size;
+  }
   return res;
 }
 

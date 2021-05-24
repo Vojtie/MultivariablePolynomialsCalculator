@@ -6,7 +6,7 @@
  * czy powinniśmy wszędzie dodać assert(ptr)
  * czy line_num może być globalne
  * sprawdzić czy headery które nawzajem się includują, mimo to są zaincludowane w .c w których są potrzebne
- * zamienić wywołania PolySimplify z poly.c na tutaj
+ * zamienić wywołania PolySimplifyRec z poly.c na tutaj
  */
 static size_t line_num = 1;
 
@@ -79,7 +79,7 @@ static void Add(Stack *s) {
   if (CanPerformOp(ADD, s)) {
     Poly p = StackPop(s), q = StackPop(s);
     Poly pq = PolyAdd(&p, &q);
-    StackPush(s, PolySimplify(&pq));
+    StackPush(s, PolySimplifyRec(&pq));
     PolyDestroy(&p);
     PolyDestroy(&q);
   }
@@ -89,7 +89,7 @@ static void Mul(Stack *s) {
   if (CanPerformOp(MUL, s)) {
     Poly p = StackPop(s), q = StackPop(s);
     Poly pq = PolyMul(&p, &q);
-    StackPush(s, PolySimplify(&pq));
+    StackPush(s, PolySimplifyRec(&pq));
     PolyDestroy(&p);
     PolyDestroy(&q);
   }
@@ -99,7 +99,7 @@ static void Neg(Stack *s) {
   if (CanPerformOp(NEG, s)) {
     Poly p = StackPop(s);
     Poly q = PolyNeg(&p);
-    StackPush(s, PolySimplify(&q));
+    StackPush(s, PolySimplifyRec(&q));
     PolyDestroy(&p);
   }
 }
@@ -108,7 +108,7 @@ static void Sub(Stack *s) {
   if (CanPerformOp(SUB, s)) {
     Poly p = StackPop(s), q = StackPop(s);
     Poly pq = PolySub(&p, &q);
-    StackPush(s, PolySimplify(&pq));
+    StackPush(s, PolySimplifyRec(&pq));
     PolyDestroy(&p);
     PolyDestroy(&q);
   }
@@ -133,7 +133,7 @@ static void At(Stack *s, at_arg_t var) {
   if (CanPerformOp(AT, s)) {
     Poly p = StackPop(s);
     Poly q = PolyAt(&p, var);
-    StackPush(s, PolySimplify(&q));
+    StackPush(s, PolySimplifyRec(&q));
     PolyDestroy(&p);
   }
 }

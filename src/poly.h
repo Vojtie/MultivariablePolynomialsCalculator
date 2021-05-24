@@ -256,6 +256,9 @@ Poly PolyDelZeros(Poly *p);
  */
 Poly PolySimplify(Poly *p);
 
+Poly PolySimplifyRec(Poly *p);
+
+
 void PolyPrint(const Poly *p);
 
 bool PolysAreEq(const Poly *p, const Poly *q);

@@ -234,10 +234,6 @@ static bool IsIgnoredLine(int ch) {
 }
 static bool IsCorrectPolyChar(char last_ch, char ch) {
   bool res = true;
-  /*
-  if (!(ch == '(' || ch == ')' || ch == ',' || ch == '-' || ch == '+' || IsNumber(ch)))
-    res = false;
-    */
   if (last_ch == '(' && ch != '(' && !IsNumber(ch) && ch != '-')
     res = false;
   else if (last_ch == ',' && !IsNumber(ch) && ch != '-')
