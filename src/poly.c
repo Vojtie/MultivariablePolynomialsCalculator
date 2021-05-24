@@ -137,16 +137,23 @@ static Poly PolyAddCoeffToMonos(const Poly *p, poly_coeff_t coeff) {
   Poly res;
   if (coeff == 0) {
     res = PolyClone(p);
-  } else {
-    res.size = PolyGetSize(p) + 1;
-    res.arr = AllocMemForMonos(PolyGetSize(&res));
-    for (size_t i = 0; i < res.size - 1; i++) // zmiana z PolyGetSize(p)
+  }
+  else if (MonoGetExp(&p->arr[0]) == 0) {
+    res.arr = AllocMemForMonos(PolyGetSize(p));
+    for (size_t i = 1; i < res.size; i++)
       res.arr[i] = MonoClone(&p->arr[i]);
-    res.arr[PolyGetSize(p)].p = PolyFromCoeff(coeff);
-    res.arr[PolyGetSize(p)].exp = 0;
-    /*
-    PolyPrint(&res);
-    printf("\n"); */
+    if (PolyIsCoeff(MonoGetPtrToPoly(&p->arr[0])))
+      res.arr[0].p = PolyFromCoeff(coeff + PolyGetCoeff(MonoGetPtrToPoly(&p->arr[0])));
+    else
+      res.arr[0].p = PolyAddCoeffToMonos(MonoGetPtrToPoly(&p->arr[0]), coeff);
+  }
+  else {
+    res.size = PolyGetSize(p) + 1;
+    res.arr = AllocMemForMonos(res.size);
+    res.arr[0].exp = 0;
+    res.arr[0].p = PolyFromCoeff(coeff);
+    for (size_t i = 1; i < res.size; i++)
+      res.arr[i] = MonoClone(&p->arr[i - 1]);
   }
   return res;
 }
