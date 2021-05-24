@@ -194,30 +194,30 @@ static Command ReadCommand(Line *line) {
       res.op = IS_ZERO;
     else if (line->last_index == 5 && oper[3] == 'E' && oper[4] == 'Q')
       res.op = IS_EQ;
+    else
+      line->error_type = WR_COMMAND;
   }
   else if (line->last_index >= 5 && oper[0] == 'D' && oper[1] == 'E' && oper[2] == 'G' && oper[3] == '_' && oper[4] == 'B' && oper[5] == 'Y') {
     if (oper[6] == ' ' && IsNumber(oper[7])) {
       res.op = DEG_BY;
       res.deg_by_arg = ReadDegByArg(line, 7);
-    } else {
-      line->error_type = WR_DEG_BY_VAR;
     }
+    else
+      line->error_type = WR_DEG_BY_VAR;
   }
   else if (line->last_index >= 1 && oper[0] == 'A' && oper[1] == 'T') {
     if (line->last_index >= 3 && oper[2] == ' ' && (oper[3] == '-' || IsNumber(oper[3]))) {
       res.op = AT;
       res.at_arg = ReadAtArg(line, 3);
-    } else {
+    } else
       line->error_type = WR_AT_VAL;
-    }
   }
   else if (line->last_index == 5 && oper[0] == 'P' && oper[1] == 'R' && oper[2] == 'I' && oper[3] == 'N' && oper[4] == 'T')
     res.op = PRINT;
   else if (line->last_index == 5 && oper[0] == 'C' && oper[1] == 'L' && oper[2] == 'O' && oper[3] == 'N' && oper[4] == 'E')
     res.op = CLONE;
-  else {
+  else
     line->error_type = WR_COMMAND;
-  }
   return res;
 }
 /*

@@ -238,7 +238,7 @@ Poly PolyAdd(const Poly *p, const Poly *q) {
   PolyPrint(&res);
   printf("\n");
    */
-  return PolySimplify(&res);
+  return res;
 }
 
 /**
