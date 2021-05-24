@@ -188,7 +188,7 @@ static Command ReadCommand(Line *line) {
   else if (line->last_index == 4 && oper[0] == 'Z' && oper[1] == 'E' && oper[2] == 'R' && oper[3] == 'O')
     res.op = ZERO;
   else if (line->last_index >= 5 && oper[0] == 'I' && oper[1] == 'S' && oper[2] == '_') {
-    if (line->last_index == 9 && oper[3] == 'C' && oper[4] == 'O' && oper[5] == 'E' && oper[6] == 'F' && oper[7] == 'F' && oper[8] == 'O')
+    if (line->last_index == 8 && oper[3] == 'C' && oper[4] == 'O' && oper[5] == 'E' && oper[6] == 'F' && oper[7] == 'F')
       res.op = IS_COEFF;
     else if (line->last_index == 7 && oper[3] == 'Z' && oper[4] == 'E' && oper[5] == 'R' && oper[6] == 'O')
       res.op = IS_ZERO;
