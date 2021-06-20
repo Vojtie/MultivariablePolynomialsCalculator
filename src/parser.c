@@ -182,7 +182,6 @@ static deg_by_arg_t ReadComposeArg(Line *line, size_t arg_i) {
   res = strtoul((char *) &line->chars[arg_i], &endptr, 10);
   if (errno == ERANGE || *endptr != '\0')
     line->error_type = WR_COMPOSE_VAR;
-  if (strlen(&line->chars[arg_i]) != line->last_index - arg_i - 1)
   return res;
 }
 /** TODO UZUPELNIC */
