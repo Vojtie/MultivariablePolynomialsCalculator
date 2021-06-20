@@ -73,7 +73,7 @@ void StackPush(Stack *s, Poly p);
  * @param s : stos
  * @return liczba wielomianów
  */
-size_t StackNumberOfPolys(Stack *s);
+unsigned long StackNumberOfPolys(Stack *s);
 
 /**
  * Zwalnia pamięć zaalokowaną

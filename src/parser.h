@@ -17,11 +17,14 @@
  * To jest typ wyliczeniowy oznaczający polecenie.
  */
 typedef enum Operator {
-    ZERO, IS_COEFF, IS_ZERO, CLONE, ADD, MUL, NEG, SUB, IS_EQ, DEG, DEG_BY, AT, PRINT, POP, NONE_OP
+    ZERO, IS_COEFF, IS_ZERO, CLONE, ADD, MUL, NEG, SUB, IS_EQ, DEG, DEG_BY, AT, PRINT, POP, COMPOSE, NONE_OP
 } Operator;
 
 /** To jest typ reprezentujący argument polecenia DegBy. */
 typedef unsigned long deg_by_arg_t;
+
+/** To jest typ reprezentujący argument polecenia Compose. */
+typedef unsigned long compose_arg_t;
 
 /** To jest typ reprezentujący argument polecenia At. */
 typedef long at_arg_t;
@@ -34,6 +37,7 @@ typedef struct Command {
     union {
         at_arg_t at_arg;
         deg_by_arg_t deg_by_arg;
+        compose_arg_t compose_arg;
     };
 } Command;
 
@@ -41,7 +45,7 @@ typedef struct Command {
  * To jest typ wyliczeniowy oznaczający błąd.
  */
 typedef enum Error {
-    WR_POLY, WR_COMMAND, WR_DEG_BY_VAR, WR_AT_VAL, ST_UND, NONE_ERR
+    WR_POLY, WR_COMMAND, WR_DEG_BY_VAR, WR_COMPOSE_VAR, WR_AT_VAL, ST_UND, NONE_ERR
 } Error;
 
 /**
@@ -52,7 +56,7 @@ typedef enum LineType {
 } LineType;
 
 /**
- * To jest struktura przechowująca wiersz.
+ * To jest struktura przechowująca wiersz.:
  */
 typedef struct Line {
     char *chars;

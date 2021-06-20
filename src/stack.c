@@ -85,7 +85,7 @@ Poly *StackPeekSecond(Stack *s) {
   return &s->polys[s->top - 1];
 }
 
-size_t StackNumberOfPolys(Stack *s) {
+unsigned long StackNumberOfPolys(Stack *s) {
   assert(s);
   return s->top + 1;
 }

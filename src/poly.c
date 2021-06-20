@@ -21,7 +21,7 @@
  */
 static void CheckAlloc(const void *pointer) {
   if (!pointer)
-    exit(1);
+    exit(7);
 }
 
 /**
@@ -121,7 +121,7 @@ Poly PolyClone(const Poly *p) {
   }
   return copy;
 }
-
+/**** UPDATE ****/
 /**
  * Zwraca wielomian składający się z tablicy jednomianów
  * wielomianu @p p oraz jednomianu o wykładniku równym
@@ -136,16 +136,14 @@ static Poly PolyAddCoeffToMonos(const Poly *p, poly_coeff_t coeff) {
   Poly res;
   if (coeff == 0) {
     res = PolyClone(p);
-  }
-  else if (MonoGetExp(&p->arr[0]) == 0) {
+  } else if (MonoGetExp(&p->arr[0]) == 0) {
     if (PolyIsCoeff(MonoGetPtrToPoly(&p->arr[0])) && coeff + PolyGetCoeff(MonoGetPtrToPoly(&p->arr[0])) == 0) {
       assert(PolyGetSize(p) > 1);
       res.size = PolyGetSize(p) - 1;
       res.arr = AllocMemForMonos(res.size);
       for (size_t i = 0; i < res.size; i++)
         res.arr[i] = MonoClone(&p->arr[i + 1]);
-    }
-    else {
+    } else {
       res.arr = AllocMemForMonos(PolyGetSize(p));
       res.size = PolyGetSize(p);
       for (size_t i = 1; i < res.size; i++)
@@ -156,8 +154,7 @@ static Poly PolyAddCoeffToMonos(const Poly *p, poly_coeff_t coeff) {
         res.arr[0].p = PolyAddCoeffToMonos(MonoGetPtrToPoly(&p->arr[0]), coeff);
       res.arr[0].exp = 0;
     }
-  }
-  else {
+  } else {
     res.size = PolyGetSize(p) + 1;
     res.arr = AllocMemForMonos(res.size);
     res.arr[0].exp = 0;
@@ -168,13 +165,6 @@ static Poly PolyAddCoeffToMonos(const Poly *p, poly_coeff_t coeff) {
   return res;
 }
 
-/**
- * Zwraca wielomian, który jest kopią wielomianu
- * @p p z pominięcięm jednomianów zerowych.
- * Przejmuje na własność wielomian @p p.
- * @param[in] p : wielomian
- * @return wielomian nie zawierający jednomianów zerowych.
- */
 Poly PolyDelZeros(Poly *p) {
   assert(p && !PolyIsCoeff(p));
   Poly res;
@@ -347,6 +337,54 @@ Poly PolyAddMonos(size_t count, const Mono monos[]) {
       }
     }
     return PolyDelZeros(&copy);
+  }
+}
+
+Poly PolyOwnMonos(size_t count, Mono *monos) {
+  if (count == 0 || monos == NULL)
+    return PolyZero();
+  else {
+    for (size_t i = 0; i < count; i++) {
+      if (!PolyIsZero(&monos[i].p)) {
+        for (size_t j = i + 1; j < count
+          && MonoGetExp(&monos[i]) == MonoGetExp(&monos[j]); j++) {
+          Poly temp = monos[i].p;
+          monos[i].p = PolyAdd(&monos[i].p, &monos[j].p);
+          PolyDestroy(&temp);
+          PolyDestroy(&monos[j].p);
+          monos[j].p = PolyZero();
+        }
+      }
+    }
+    Poly res = PolyFromMonos(monos, count);
+    return PolyDelZeros(&res);
+  }
+}
+
+Poly PolyCloneMonos(size_t count, const Mono monos[]) {
+  if (count == 0 || monos == NULL)
+    return PolyZero();
+  else {
+    Mono *clones = AllocMemForMonos(count);
+    for (size_t i = 0; i < count; i++) {
+      if (!PolyIsZero(&monos[i].p)) {
+        bool added = false;
+        for (size_t j = i + 1; j < count
+                               && MonoGetExp(&monos[i]) == MonoGetExp(&monos[j]); j++) {
+          clones[i].p = PolyAdd(&monos[i].p, &monos[j].p);
+          added = true;
+        }
+        if (!added) {
+          clones[i].p = PolyClone(&monos[i].p);
+          clones[i].exp = MonoGetExp(&monos[i]);
+        }
+      } else {
+        clones[i].p = PolyZero();
+        clones[i].exp = 0;
+      }
+    }
+    Poly res = PolyFromMonos(clones, count);
+    return PolyDelZeros(&res);
   }
 }
 
@@ -603,6 +641,80 @@ void PolyPrint(const Poly *p) {
     PolyPrint(&p->arr[p_size - 1].p);
     printf(",%d)", MonoGetExp(&p->arr[p_size - 1]));
   }
+}
+
+Poly PolyAddPolys(size_t count, Poly polys[]) {
+  size_t size = 0;
+  for (size_t i = 0; i < count; i++)
+    if (!PolyIsCoeff(polys + i))
+      size += PolyGetSize(polys + i);
+  Mono monos[size];
+  poly_coeff_t coeff = 0;
+  for (size_t polys_i = 0, m_i = 0; polys_i < count; polys_i++) {
+    if (!PolyIsCoeff(polys + polys_i)) {
+      size_t p_i_size = PolyGetSize(polys + polys_i);
+      for (size_t j = 0; j < p_i_size; j++)
+        monos[m_i++] = polys[polys_i].arr[j];
+    } else {
+      coeff += PolyGetCoeff(polys + polys_i);
+    }
+  }
+  SortMonos(monos, size);
+  Poly res = PolyAddMonos(size, monos), temp = res;
+  Poly poly_coeff = PolyFromCoeff(coeff);
+  res = PolyAdd(&res, &poly_coeff);
+  PolyDestroy(&temp);
+  return res;
+}
+
+Poly PolyRaiseToPower(const Poly *p, poly_exp_t exp) {
+  assert(p && exp >= 0);
+  Poly res;
+  if (exp == 0) {
+    res = PolyFromCoeff(1);
+  } else if (exp == 1) {
+    res = PolyClone(p);
+  } else {
+    res = PolyMul(p, p);
+    for (size_t i = 2; i < (size_t) exp; i++) {
+      Poly temp = res;
+      res = PolyMul(&res, p);
+      PolyDestroy(&temp);
+    }
+  }
+  return res;
+}
+
+Poly PolyCompose(const Poly *p, size_t k, const Poly q[]) {
+  assert(p && q);
+  assert(k >= 0);
+  Poly composed;
+  size_t p_size = PolyGetSize(p);
+  if (PolyIsCoeff(p)) {
+    composed = PolyFromCoeff(PolyGetCoeff(p));
+    // co jesli mamy k = 0 i x_i^0
+  } else if (k == 0) {
+    composed = PolyZero();
+  } else {
+    Poly polys[p_size];
+    for (size_t i = 0; i < p_size; i++) {
+      Poly temp1 = PolyCompose(&p->arr[i].p, k - 1, q + 1);
+      if (PolyIsZero(&temp1))
+        polys[i] = temp1;
+      else {
+        Poly temp2 = PolyRaiseToPower(q, MonoGetExp(p->arr + i));
+        /**
+        Mono monos[] = {(Mono) {.exp = 0, .p = temp1} };
+        Poly temp3 = PolyFromMonos(monos, 1);
+         */
+        polys[i] = PolyMul(&temp1, &temp2);
+        PolyDestroy(&temp1);
+        PolyDestroy(&temp2);
+      }
+    }
+    composed = PolyAddPolys(p_size, polys);
+  }
+  return composed;
 }
 
 #endif //POLYNOMIALS_POLY_C

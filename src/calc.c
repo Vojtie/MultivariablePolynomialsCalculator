@@ -30,6 +30,9 @@ static void PrintError(Error error_type) {
     case WR_DEG_BY_VAR:
       fprintf(stderr, "ERROR %zu DEG BY WRONG VARIABLE\n", line_num);
       break;
+    case WR_COMPOSE_VAR:
+      fprintf(stderr, "ERROR %zu COMPOSE WRONG PARAMETER\n", line_num);
+      break;
     case WR_AT_VAL:
       fprintf(stderr, "ERROR %zu AT WRONG VALUE\n", line_num);
       break;
@@ -59,6 +62,15 @@ static bool CanPerformOp(Operator op, Stack *s) {
       break;
     default:
       break;
+  }
+  return res;
+}
+
+static bool CanPerformCompose(compose_arg_t arg, Stack *s) {
+  bool res = true;
+  if (StackNumberOfPolys(s) < arg + 1) {
+    PrintError(ST_UND);
+    res = false;
   }
   return res;
 }
@@ -161,6 +173,20 @@ static void Pop(Stack *s) {
   }
 }
 
+static void Compose(Stack *s, compose_arg_t arg) {
+  if (CanPerformCompose(arg, s)) {
+    Poly p = StackPop(s);
+    Poly q[arg];
+    for (compose_arg_t i = arg; i > 0; i--)
+      q[i - 1] = StackPop(s);
+    Poly composed = PolyCompose(&p, arg, q);
+    StackPush(s, PolySimplify(&composed));
+    PolyDestroy(&p);
+    for (size_t i = 0; i < arg; i++)
+      PolyDestroy(&q[i]);
+  }
+}
+
 static void PerformCommand(Stack *s, Command command) {
   switch (command.op) {
     case ZERO:
@@ -199,6 +225,9 @@ static void PerformCommand(Stack *s, Command command) {
     case AT:
       At(s, command.at_arg);
       break;
+    case COMPOSE:
+      Compose(s, command.compose_arg);
+      break;
     case PRINT:
       Print(s);
       break;
@@ -232,8 +261,7 @@ int main() {
     if (type != EMPTY)
       free(line.chars);
     line_num++;
-  }
-  while (!line.is_eof);
+  } while (!line.is_eof);
   StackFree(s);
   return 0;
 }
