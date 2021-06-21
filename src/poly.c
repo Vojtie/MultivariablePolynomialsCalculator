@@ -316,35 +316,13 @@ static Poly PolyShallowCopy(size_t count, const Mono monos[]) {
 }
 
 Poly PolyAddMonos(size_t count, const Mono monos[]) {
-  assert(monos);
   Poly res;
-  if (count == 0)
+  if (count == 0 || monos == NULL)
     res = PolyZero();
   else {
     Mono *copys = AllocMemForMonos(count);
     memcpy(copys, monos, sizeof(Mono) * count);
-    SortMonos(copys, count);
     res = PolyOwnMonos(count, copys);
-    /*
-    Poly copy = PolyShallowCopy(count, monos), temp1, temp2;
-    SortPoly(&copy);
-
-    for (size_t i = 0; i < PolyGetSize(&copy); i++) {
-      if (PolyIsZero(&copy.arr[i].p))
-        continue;
-      else {
-        for (size_t j = i + 1; j < PolyGetSize(&copy)
-          && MonoGetExp(&copy.arr[i]) == MonoGetExp(&copy.arr[j]); j++) {
-          temp1 = copy.arr[i].p;
-          temp2 = copy.arr[j].p;
-          copy.arr[i].p = PolyAdd(&temp1, &temp2);
-          copy.arr[j].p = PolyZero();
-          PolyDestroy(&temp1);
-          PolyDestroy(&temp2);
-        }
-      }
-    }
-     */
   }
   return res;
 }
@@ -354,6 +332,7 @@ Poly PolyOwnMonos(size_t count, Mono *monos) {
   if (count == 0 || monos == NULL)
     res = PolyZero();
   else {
+    SortMonos(monos, count);
     for (size_t i = 0; i < count; i++) {
       if (!PolyIsZero(&monos[i].p)) {
         for (size_t j = i + 1; j < count
@@ -381,28 +360,6 @@ Poly PolyCloneMonos(size_t count, const Mono monos[]) {
     for (size_t i = 0; i < count; i++)
       copys[i] = MonoClone(monos + i);
     res = PolyOwnMonos(count, copys);
-    /*
-    Mono *clones = AllocMemForMonos(count);
-    for (size_t i = 0; i < count; i++) {
-      if (!PolyIsZero(&monos[i].p)) {
-        bool added = false;
-        for (size_t j = i + 1; j < count
-                               && MonoGetExp(&monos[i]) == MonoGetExp(&monos[j]); j++) {
-          clones[i].p = PolyAdd(&monos[i].p, &monos[j].p);
-          added = true;
-        }
-        if (!added) {
-          clones[i].p = PolyClone(&monos[i].p);
-          clones[i].exp = MonoGetExp(&monos[i]);
-        }
-      } else {
-        clones[i].p = PolyZero();
-        clones[i].exp = 0;
-      }
-    }
-    Poly res = PolyFromMonos(clones, count);
-    return PolyDelZeros(&res);
-     */
   }
   return res;
 }
@@ -702,35 +659,15 @@ Poly PolyAddPolys(size_t count, Poly polys[]) {
       size_t p_i_size = PolyGetSize(polys + polys_i);
       for (size_t j = 0; j < p_i_size; j++)
         monos[m_i++] = polys[polys_i].arr[j];
+      free(polys[polys_i].arr);
     } else {
       coeff += PolyGetCoeff(polys + polys_i);
     }
   }
-  SortMonos(monos, size);
   Poly res = PolyAddMonos(size, monos), temp = res;
   Poly poly_coeff = PolyFromCoeff(coeff);
   res = PolyAdd(&res, &poly_coeff);
   PolyDestroy(&temp);
-  return res;
-}
-
-Poly PolyRaiseToPowerOld(const Poly *p, poly_exp_t exp) {
-  assert(exp >= 0);
-  Poly res;
-  if (exp == 0)
-    res = PolyFromCoeff(1);
-  else if (p == NULL)
-    res = PolyZero();
-  else if (exp == 1)
-    res = PolyClone(p);
-  else {
-    res = PolyMul(p, p);
-    for (size_t i = 2; i < (size_t) exp; i++) {
-      Poly temp = res;
-      res = PolyMul(&res, p);
-      PolyDestroy(&temp);
-    }
-  }
   return res;
 }
 
