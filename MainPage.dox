@@ -7,17 +7,19 @@ Uwaga: aktualna treść zadania znajduje się w [Moodle](https://moodle.mimuw.ed
 
 ### Opis programu
 
-Tegoroczne duże zadanie polega na zaimplementowaniu operacji na wielomianach
-rzadkich wielu zmiennych.
+Program stanowi kalkulator działający na wielomianach rzadkich wielu zmiennych, stosujący odwrotną notację polską.
+Kalkulator czyta dane wierszami ze standardowego wejścia. Poprawny wiersz zawiera wielomian lub polecenie do wykonania,
+lub jest komentarzem (oznaczany przez '#' na początku wiersza).
 
 ## Wielomiany
 
-Zmienne wielomianu oznaczamy @f$x_0, x_1, x_2@f$ itd. Definicja wielomianu jest rekurencyjna.
-Wielomian jest sumą jednomianów postaci @f$px^n_0@f$, gdzie n jest wykładnikiem tego jednomianu będącym
-nieujemną liczbą całkowitą, a p jest współczynnikiem, który jest wielomianem.
-Rekurencja kończy się, gdy współczynnik jest liczbą (czyli wielomianem stałym), a nie sumą
-kolejnych jednomianów. Wielomiany są rzadkie, co oznacza, że stopień wielomianu może być znacznie większy
-niż liczba składowych jednomianów.
+Definicja wielomianu jest rekurencyjna. Wielomian reprezentujemy jako stałą, jednomian lub sumę jednomianów.
+Stała jest liczbą całkowitą. Jednomian reprezentujemy jako parę (coeff,exp), gdzie współczynnik coeff jest wielomianem,
+a wykładnik exp jest liczbą nieujemną. Do wyrażenia sumy używamy znaku +. Jeśli wiersz zawiera wielomian,
+to program wstawia go na stos.
+Przykłady poprawnych wielomianów:
+- ((1,1),2) to wielomian: @f$x_0^2x_1@f$
+- (3,2)+(4,3)+((9,7),8)+4 to wielomian: @f$3x_0^2+4x_0^3+9x_1^7x_0^8+4@f$
 
 ## Implementacja wielomianu
 
@@ -26,15 +28,35 @@ Wielomian może być liczbą całkowitą, czyli wielomianem stałym lub listą j
 które są zaimplementowane za pomocą typu strukturalnego <Mono>.
 Na jednomian składa się wartość jego wykładnika oraz współczynnik jednomianu, który jest wielomianem.
 
-## Główne funkcjonalności interfejsu
+## Funkcjonalności kalkulatora
 
-Do zaimplementowanych operacji na wielomianach należą między innymi:
+Wielomiany w kalkulatorze przechowywane są na stosie. Aby dodać do kalkulatora wielomian
+(w celu przyszłego użycia go do wykonania operacji) należy wpisać wielomian poprzez standardowe
+wejście w formule opisanej w rozdziale Wielomiany.
 
-- operacja dodawania/odejmowania/mnożenia dwóch wielomianów
-- sprawdzenie równości dwóch wielomianów
-- obliczenie stopnia wielomianu
-- obliczenie stopnia wielomianu ze względu na zadaną zmienną
-- obliczenie wartości wielomianu w danym punkcie
+Kalkulator wykonuje następujące polecenia:
+
+- ZERO – wstawia na wierzchołek stosu wielomian tożsamościowo równy zeru;
+- IS_COEFF – sprawdza, czy wielomian na wierzchołku stosu jest współczynnikiem – wypisuje na standardowe wyjście
+ 0 lub 1;
+- IS_ZERO – sprawdza, czy wielomian na wierzchołku stosu jest tożsamościowo równy zeru – wypisuje na standardowe
+ wyjście 0 lub 1;
+- CLONE – wstawia na stos kopię wielomianu z wierzchołka;
+- ADD – dodaje dwa wielomiany z wierzchu stosu, usuwa je i wstawia na wierzchołek stosu ich sumę;
+- MUL – mnoży dwa wielomiany z wierzchu stosu, usuwa je i wstawia na wierzchołek stosu ich iloczyn;
+- NEG – neguje wielomian na wierzchołku stosu;
+- SUB – odejmuje od wielomianu z wierzchołka wielomian pod wierzchołkiem, usuwa je i wstawia na wierzchołek
+ stosu różnicę;
+- IS_EQ – sprawdza, czy dwa wielomiany na wierzchu stosu są równe – wypisuje na standardowe wyjście 0 lub 1;
+- DEG – wypisuje na standardowe wyjście stopień wielomianu (−1 dla wielomianu tożsamościowo równego zeru);
+- DEG_BY idx – wypisuje na standardowe wyjście stopień wielomianu ze względu na zmienną o numerze idx
+ (−1 dla wielomianu tożsamościowo równego zeru);
+- AT x – wylicza wartość wielomianu w punkcie x, usuwa wielomian z wierzchołka i wstawia na stos wynik operacji;
+- PRINT – wypisuje na standardowe wyjście wielomian z wierzchołka stosu;
+- POP – usuwa wielomian z wierzchołka stosu;
+- COMPOSE k - zdejmuje z wierzchołka stosu najpierw wielomian p, a potem kolejno wielomiany q[k - 1], q[k - 2], …, q[0]
+ i umieszcza na stosie wynik operacji złożenia. Jeśli liczba zmiennych wielomianu p jest mniejsza niż k, to pod zmienne
+ wielomianu p o indeksie większym niż k - 1 wstawiane są zera.
 
 ## Uwagi co do dalszego rozwoju projektu
 
@@ -43,5 +65,5 @@ Konwencje przyjęte w projekcie:
 - zaznaczanie co jest właścicielem obiektu (na właściciela obiektu spada odpowiedzialność
   za zwolnienie używanej przez niego pamięci)
 - przekazywanie argumentów przez zmienną
-- otrzymywanie wyniku funkcji na własność obiektu, który tą funkcję woła
+- implementacja z myślą o jak najprostszym dodawaniu ewentualnych rozszerzeń/modyfikacji.
 */

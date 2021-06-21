@@ -322,10 +322,12 @@ Poly PolyAddPolys(size_t count, const Poly polys[]);
 /**
  * Wykonuje operację złożenia wielomianu @p p z wielomianami @p q_i.
  * Wynikiem złożenia jest wielomian @p p(q_0, q_1, q_2,...).
+ * Jeśli liczba zmiennych wielomianu @p p jest mniejsza niż k, to pod zmienne
+ * wielomianu p o indeksie większym niż k - 1 wstawiane są zera.
  * @param p : wielomian
  * @param k : liczba wielomianów @p q
  * @param q : tablica wielomianów @p q_i
- * @return @f$ p(q_0, q_1, q_2,...) @f$
+ * @return @f$p(q_0, q_1, q_2,...)@f$
  */
 Poly PolyCompose(const Poly *p, size_t k, const Poly q[]);
 
