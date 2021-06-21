@@ -68,7 +68,8 @@ static bool CanPerformOp(Operator op, Stack *s) {
 
 static bool CanPerformCompose(compose_arg_t arg, Stack *s) {
   bool res = true;
-  if (StackNumberOfPolys(s) - 1 < arg) {
+  size_t polys_on_stack = StackNumberOfPolys(s);
+  if (polys_on_stack == 0 || polys_on_stack - 1 < arg) {
     PrintError(ST_UND);
     res = false;
   }

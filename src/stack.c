@@ -31,7 +31,7 @@ Stack *NewStack() {
   CheckAlloc(res);
   res->polys = malloc(DEF_STACK_SIZE * sizeof *res->polys);
   CheckAlloc(res->polys);
-  res->top = -1;
+  res->top = 0;
   res->size = DEF_STACK_SIZE;
   return res;
 }
@@ -60,34 +60,34 @@ static bool StackIsFull(Stack *s) {
 
 bool StackIsEmpty(Stack *s) {
   assert(s);
-  return s->top == -1;
+  return s->top == 0;
 }
 
 Poly StackPop(Stack *s) {
   assert(s && !StackIsEmpty(s));
-  return s->polys[s->top--];
+  return s->polys[--s->top];
 }
 
 void StackPush(Stack *s, Poly p) {
   assert(s && s->size > 0);
   if (StackIsFull(s))
     StackIncrease(s);
-  s->polys[++s->top] = p;
+  s->polys[s->top++] = p;
 }
 
 Poly *StackPeekFirst(Stack *s) {
   assert(s && !StackIsEmpty(s));
-  return &s->polys[s->top];
+  return &s->polys[s->top - 1];
 }
 
 Poly *StackPeekSecond(Stack *s) {
   assert(s && !StackIsEmpty(s));
-  return &s->polys[s->top - 1];
+  return &s->polys[s->top - 2];
 }
 
-unsigned long StackNumberOfPolys(Stack *s) {
+size_t StackNumberOfPolys(Stack *s) {
   assert(s);
-  return s->top + 1;
+  return s->top;
 }
 
 void StackFree(Stack *s) {

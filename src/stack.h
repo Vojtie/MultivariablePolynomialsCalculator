@@ -18,8 +18,8 @@
  */
 typedef struct Stack {
     Poly *polys;
-    long top;
-    long size;
+    size_t top;
+    size_t size;
 } Stack;
 
 /**
@@ -73,7 +73,7 @@ void StackPush(Stack *s, Poly p);
  * @param s : stos
  * @return liczba wielomianów
  */
-unsigned long StackNumberOfPolys(Stack *s);
+size_t StackNumberOfPolys(Stack *s);
 
 /**
  * Zwalnia pamięć zaalokowaną
