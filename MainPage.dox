@@ -23,9 +23,9 @@ Przykłady poprawnych wielomianów:
 
 ## Implementacja wielomianu
 
-Wielomian jest zaimplementowany za pomocą typu strukturalnego <Poly>.
+Wielomian jest zaimplementowany za pomocą typu strukturalnego 'Poly'.
 Wielomian może być liczbą całkowitą, czyli wielomianem stałym lub listą jednomianów,
-które są zaimplementowane za pomocą typu strukturalnego <Mono>.
+które są zaimplementowane za pomocą typu strukturalnego 'Mono'.
 Na jednomian składa się wartość jego wykładnika oraz współczynnik jednomianu, który jest wielomianem.
 
 ## Funkcjonalności kalkulatora

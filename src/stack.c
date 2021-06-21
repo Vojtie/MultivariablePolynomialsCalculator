@@ -13,7 +13,10 @@
 #include <stdbool.h>
 #include "stack.h"
 
+/** To jest stała przechowująca domyślny rozmiar stosu */
 #define DEF_STACK_SIZE 32
+
+/** To jest stała przechowująca domyślny współczynnik zwiększania rozmiaru stosu */
 #define DEF_ALLOC_COEFF 2
 
 /**

@@ -17,14 +17,19 @@
  * przechowujący wielomiany.
  */
 typedef struct Stack {
+    /** To jest tablica przechowująca wielomiany */
     Poly *polys;
+    /** To jest zmienna przetrzymująca liczbę wielomianów na stosie
+     * (indeks ostatniego wielomianu na stosie + 1)
+     */
     size_t top;
+    /** To jest zmienna przechowująca długość tablicy stosu */
     size_t size;
 } Stack;
 
 /**
  * Zwraca wskaźnik na nowy stos.
- * @return stos
+ * @return nowy stos
  */
 Stack *NewStack();
 

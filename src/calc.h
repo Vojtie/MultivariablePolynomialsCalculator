@@ -18,7 +18,7 @@
  * błędu odpowiedni błąd
  * @param error_type : error
  */
-static void PrintError(Error error_type);
+void PrintError(Error error_type);
 
 /**
  * Sprawdza, czy można wykonać
@@ -27,15 +27,14 @@ static void PrintError(Error error_type);
  * @param command : polecenie
  * @return Czy można wykonać operację?
  */
-static bool CanPerformOp(Stack *s, Command command);
+bool CanPerformOp(Stack *s, Command command);
 
 /**
  * Wstawia na wierzchołek stosu
  * wielomian tożsamościowo równy zeru.
  * @param s : stos
- * @param command : polecenie
  */
-static void Zero(Stack *s);
+void Zero(Stack *s);
 
 /**
  * Wypisuje na standardowe wyjście 1,
@@ -44,7 +43,7 @@ static void Zero(Stack *s);
  * @param s : stos
  * @param command : polecenie
  */
-static void IsCoeff(Stack *s, Command command);
+void IsCoeff(Stack *s, Command command);
 
 /**
  * Wypisuje na standardowe wyjście 1,
@@ -54,7 +53,7 @@ static void IsCoeff(Stack *s, Command command);
  * @param s : stos
  * @param command : polecenie
  */
-static void IsZero(Stack *s, Command command);
+void IsZero(Stack *s, Command command);
 
 /**
  * Wstawia na stos kopię
@@ -62,7 +61,7 @@ static void IsZero(Stack *s, Command command);
  * @param s : stos
  * @param command : polecenie
  */
-static void Clone(Stack *s, Command command);
+void Clone(Stack *s, Command command);
 
 /**
  * Dodaje dwa wielomiany z wierzchu stosu,
@@ -71,7 +70,7 @@ static void Clone(Stack *s, Command command);
  * @param s : stos
  * @param command : polecenie
  */
-static void Add(Stack *s, Command command);
+void Add(Stack *s, Command command);
 
 /**
  * Mnoży dwa wielomiany z wierzchu stosu,
@@ -80,7 +79,7 @@ static void Add(Stack *s, Command command);
  * @param s : stos
  * @param command : polecenie
  */
-static void Mul(Stack *s, Command command);
+void Mul(Stack *s, Command command);
 
 /**
  * Neguje wielomian na
@@ -88,7 +87,7 @@ static void Mul(Stack *s, Command command);
  * @param s : stos
  * @param command : polecenie
  */
-static void Neg(Stack *s, Command command);
+void Neg(Stack *s, Command command);
 
 /**
  * Odejmuje od wielomianu z wierzchołka
@@ -98,7 +97,7 @@ static void Neg(Stack *s, Command command);
  * @param s : stos
  * @param command : polecenie
  */
-static void Sub(Stack *s, Command command);
+void Sub(Stack *s, Command command);
 
 /**
  * Wypisuje na standardowe wyjście 1,
@@ -109,16 +108,17 @@ static void Sub(Stack *s, Command command);
  * @param command : polecenie
 
  */
-static void IsEq(Stack *s, Command command);
+void IsEq(Stack *s, Command command);
 
 /**
  * Wypisuje na standardowe wyjście
  * stopień wielomianu z wierzchołka
  * stosu (-1 dla wielomianu tożsamościowo
  * równego zeru).
+ * @param s : stos
  * @param command : polecenie
  */
-static void Deg(Stack *s, Command command);
+void Deg(Stack *s, Command command);
 
 /**
  * Wypisuje na standardowe wyjście stopień
@@ -128,7 +128,7 @@ static void Deg(Stack *s, Command command);
  * @param s : stos
  * @param command : polecenie
  */
-static void DegBy(Stack *s, Command command);
+void DegBy(Stack *s, Command command);
 
 /**
  * Wylicza wartość wielomianu z wierzchołka
@@ -137,7 +137,7 @@ static void DegBy(Stack *s, Command command);
  * @param s : stos
  * @param command : polecenie
  */
-static void At(Stack *s, Command command);
+void At(Stack *s, Command command);
 
 /**
  * Wypisuje na standardowe wyjście
@@ -146,7 +146,7 @@ static void At(Stack *s, Command command);
  * @param command : polecenie
 
  */
-static void Print(Stack *s, Command command);
+void Print(Stack *s, Command command);
 
 /**
  * Usuwa wielomian z
@@ -154,7 +154,7 @@ static void Print(Stack *s, Command command);
  * @param s : stos
  * @param command : polecenie
  */
-static void Pop(Stack *s, Command command);
+void Pop(Stack *s, Command command);
 
 /**
  * Zdejmuje z wierzchołka stosu najpierw
@@ -164,7 +164,7 @@ static void Pop(Stack *s, Command command);
  * @param s : stos
  * @param command : polecenie
  */
-static void Compose(Stack *s, Command command);
+void Compose(Stack *s, Command command);
 
 /**
  * Wykonuje zadane
@@ -172,6 +172,6 @@ static void Compose(Stack *s, Command command);
  * @param s : stos
  * @param command : polecenie
  */
-static void PerformCommand(Stack *s, Command command);
+void PerformCommand(Stack *s, Command command);
 
 #endif //POLYNOMIALS_CALC_C
