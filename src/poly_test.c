@@ -4177,7 +4177,8 @@ static const test_list_t test_list[] = {
   TEST(SimpleAddTest),
   TEST(SimpleAddMonosTest),
   TEST(SimpleOwnMonosTest),
-  TEST(SimpleCloneMonosTest),  
+  TEST(SimpleCloneMonosTest),
+  /*
   TEST(SimpleMulTest),
   TEST(SimpleNegTest),
   TEST(SimpleSubTest),
@@ -4209,6 +4210,7 @@ static const test_list_t test_list[] = {
   TEST(MemoryThiefTest),
   TEST(MemoryFreeTest),
   TEST(MemoryGroup),
+   */
 };
 
 int main() {

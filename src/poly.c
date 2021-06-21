@@ -12,6 +12,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include "poly.h"
 
 /**
@@ -316,11 +317,18 @@ static Poly PolyShallowCopy(size_t count, const Mono monos[]) {
 
 Poly PolyAddMonos(size_t count, const Mono monos[]) {
   assert(monos);
+  Poly res;
   if (count == 0)
-    return PolyZero();
+    res = PolyZero();
   else {
+    Mono *copys = AllocMemForMonos(count);
+    memcpy(copys, monos, sizeof(Mono) * count);
+    SortMonos(copys, count);
+    res = PolyOwnMonos(count, copys);
+    /*
     Poly copy = PolyShallowCopy(count, monos), temp1, temp2;
     SortPoly(&copy);
+
     for (size_t i = 0; i < PolyGetSize(&copy); i++) {
       if (PolyIsZero(&copy.arr[i].p))
         continue;
@@ -336,13 +344,15 @@ Poly PolyAddMonos(size_t count, const Mono monos[]) {
         }
       }
     }
-    return PolyDelZeros(&copy);
+     */
   }
+  return res;
 }
 
 Poly PolyOwnMonos(size_t count, Mono *monos) {
+  Poly res;
   if (count == 0 || monos == NULL)
-    return PolyZero();
+    res = PolyZero();
   else {
     for (size_t i = 0; i < count; i++) {
       if (!PolyIsZero(&monos[i].p)) {
@@ -356,15 +366,22 @@ Poly PolyOwnMonos(size_t count, Mono *monos) {
         }
       }
     }
-    Poly res = PolyFromMonos(monos, count);
-    return PolyDelZeros(&res);
+    res = PolyFromMonos(monos, count);
+    res = PolyDelZeros(&res);
   }
+  return res;
 }
 
 Poly PolyCloneMonos(size_t count, const Mono monos[]) {
+  Poly res;
   if (count == 0 || monos == NULL)
-    return PolyZero();
+    res = PolyZero();
   else {
+    Mono *copys = AllocMemForMonos(count);
+    for (size_t i = 0; i < count; i++)
+      copys[i] = MonoClone(monos + i);
+    res = PolyOwnMonos(count, copys);
+    /*
     Mono *clones = AllocMemForMonos(count);
     for (size_t i = 0; i < count; i++) {
       if (!PolyIsZero(&monos[i].p)) {
@@ -385,7 +402,9 @@ Poly PolyCloneMonos(size_t count, const Mono monos[]) {
     }
     Poly res = PolyFromMonos(clones, count);
     return PolyDelZeros(&res);
+     */
   }
+  return res;
 }
 
 bool PolyIsEq(const Poly *p, const Poly *q) {
