@@ -184,7 +184,13 @@ static deg_by_arg_t ReadComposeArg(Line *line, size_t arg_i) {
     line->error_type = WR_COMPOSE_VAR;
   return res;
 }
-/** TODO UZUPELNIC */
+/**
+ * Sprawdza czy napis składa
+ * się jedynie z cyfr.
+ * @param string : napis
+ * @param size : długość napisu
+ * @return Czy napis składa się jednie z cyfr?
+ */
 static bool AreDigits(char *string, size_t size) {
   bool res = true;
   for (size_t i = 0; i < size && res; i++)

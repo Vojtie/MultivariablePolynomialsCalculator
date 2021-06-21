@@ -311,6 +311,15 @@ Poly PolySimplifyRec(Poly *p);
 void PolyPrint(const Poly *p);
 
 /**
+ * Sumuje listę wielomianów i tworzy z nim wielomian.
+ * Przejmuje na własność zawartość tablicy @p polys.
+ * @param count : liczba wielomianów
+ * @param polys : tablica wielomianów
+ * @return wielomian będący sumą wielomianów
+ */
+Poly PolyAddPolys(size_t count, const Poly polys[]);
+
+/**
  * Wykonuje operację złożenia wielomianu @p p z wielomianami @p q_i.
  * Wynikiem złożenia jest wielomian @p p(q_0, q_1, q_2,...).
  * @param p : wielomian

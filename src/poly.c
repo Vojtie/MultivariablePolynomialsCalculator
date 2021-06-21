@@ -124,13 +124,10 @@ Poly PolyClone(const Poly *p) {
 }
 /**** UPDATE ****/
 /**
- * Zwraca wielomian składający się z tablicy jednomianów
- * wielomianu @p p oraz jednomianu o wykładniku równym
- * zeru i współczynniku, będącym wielomianem stałym o
- * współczynniku @p coeff.
+ * Zwraca wielomian będący sumą wielomianu i stałej.
  * @param[in] p : wielomian
- * @param[in] coeff : współczynnik
- * @return wielomian
+ * @param[in] coeff : stała
+ * @return @f$p + coeff@f$
  */
 static Poly PolyAddCoeffToMonos(const Poly *p, poly_coeff_t coeff) {
   assert(p && !PolyIsCoeff(p));
@@ -294,25 +291,6 @@ static void SortPoly(const Poly *p) {
   assert(p);
   if (!PolyIsCoeff(p))
     SortMonos(PolyGetArr(p), PolyGetSize(p));
-}
-
-/**
- * Zwraca wielomian, którego tablica jednomianów
- * stanowi kopię tablicy jednomianów @p monos.
- * Przejmuje na własnosć zawartość tablicy @p monos.
- * @param[in] count : liczba jednomianów
- * @param[in] monos : tablica jednomianów
- * @return wielomian o skopiowanej tablicy jednomianów
- */
-static Poly PolyShallowCopy(size_t count, const Mono monos[]) {
-  assert(monos);
-  Mono *copy = AllocMemForMonos(count);
-  for (size_t i = 0; i < count; i++) {
-    copy[i].exp = MonoGetExp(&monos[i]);
-    copy[i].p.arr = PolyGetArr(&monos[i].p);
-    copy[i].p.size = PolyGetSize(&monos[i].p);
-  } 
-  return PolyFromMonos(copy, count);
 }
 
 Poly PolyAddMonos(size_t count, const Mono monos[]) {
@@ -550,6 +528,13 @@ static poly_coeff_t ExpBySquaring(poly_coeff_t x, poly_exp_t n) {
   return res;
 }
 
+/**
+ * Zwraca wielomian @p p
+ * podniesiony do potęgi @p exp.
+ * @param p : wielomian
+ * @param exp : wykładnik potęgi
+ * @return @f$p^{exp}@f$
+ */
 Poly PolyRaiseToPower(const Poly *p, poly_exp_t exp) {
   assert(exp >= 0);
   Poly res;
@@ -647,7 +632,7 @@ void PolyPrint(const Poly *p) {
   }
 }
 
-Poly PolyAddPolys(size_t count, Poly polys[]) {
+Poly PolyAddPolys(size_t count, const Poly polys[]) {
   size_t size = 0;
   for (size_t i = 0; i < count; i++)
     if (!PolyIsCoeff(polys + i))

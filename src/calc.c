@@ -44,9 +44,10 @@ static void PrintError(Error error_type) {
   }
 }
 
-static bool CanPerformOp(Operator op, Stack *s) {
+static bool CanPerformOp(Stack *s, Command command) {
   bool res = true;
-  switch (op) {
+  size_t polys_on_stack = StackNumberOfPolys(s);
+  switch (command.op) {
     case ZERO: case IS_COEFF: case IS_ZERO: case CLONE: case NEG: case DEG:
     case DEG_BY: case AT: case PRINT: case POP:
       if (StackIsEmpty(s)) {
@@ -55,23 +56,18 @@ static bool CanPerformOp(Operator op, Stack *s) {
       }
       break;
       case ADD: case MUL: case SUB: case IS_EQ:
-        if (StackNumberOfPolys(s) < 2) {
+        if (polys_on_stack < 2) {
           PrintError(ST_UND);
           res = false;
         }
       break;
+    case COMPOSE:
+      if (polys_on_stack == 0 || polys_on_stack - 1 < command.compose_arg) {
+        PrintError(ST_UND);
+        res = false;
+      }
     default:
       break;
-  }
-  return res;
-}
-
-static bool CanPerformCompose(compose_arg_t arg, Stack *s) {
-  bool res = true;
-  size_t polys_on_stack = StackNumberOfPolys(s);
-  if (polys_on_stack == 0 || polys_on_stack - 1 < arg) {
-    PrintError(ST_UND);
-    res = false;
   }
   return res;
 }
@@ -81,24 +77,24 @@ static void Zero(Stack *s) {
   StackPush(s, PolyZero());
 }
 
-static void IsCoeff(Stack *s) {
-  if (CanPerformOp(IS_COEFF, s)) {
+static void IsCoeff(Stack *s, Command command) {
+  if (CanPerformOp(s, command)) {
     printf("%d\n", PolyIsCoeff(StackPeekFirst(s)) ? 1 : 0);
   }
 }
 
-static void IsZero(Stack *s) {
-  if (CanPerformOp(IS_ZERO, s))
+static void IsZero(Stack *s, Command command) {
+  if (CanPerformOp(s, command))
     printf("%d\n", PolyIsZero(StackPeekFirst(s)) ? 1 : 0);
 }
 
-static void Clone(Stack *s) {
-  if (CanPerformOp(CLONE, s))
+static void Clone(Stack *s, Command command) {
+  if (CanPerformOp(s, command))
     StackPush(s, PolyClone(StackPeekFirst(s)));
 }
 
-static void Add(Stack *s) {
-  if (CanPerformOp(ADD, s)) {
+static void Add(Stack *s, Command command) {
+  if (CanPerformOp(s, command)) {
     Poly p = StackPop(s), q = StackPop(s);
     Poly pq = PolyAdd(&p, &q);
     StackPush(s, PolySimplifyRec(&pq));
@@ -107,8 +103,8 @@ static void Add(Stack *s) {
   }
 }
 
-static void Mul(Stack *s) {
-  if (CanPerformOp(MUL, s)) {
+static void Mul(Stack *s, Command command) {
+  if (CanPerformOp(s, command)) {
     Poly p = StackPop(s), q = StackPop(s);
     Poly pq = PolyMul(&p, &q);
     StackPush(s, PolySimplifyRec(&pq));
@@ -117,8 +113,8 @@ static void Mul(Stack *s) {
   }
 }
 
-static void Neg(Stack *s) {
-  if (CanPerformOp(NEG, s)) {
+static void Neg(Stack *s, Command command) {
+  if (CanPerformOp(s, command)) {
     Poly p = StackPop(s);
     Poly q = PolyNeg(&p);
     StackPush(s, PolySimplifyRec(&q));
@@ -126,8 +122,8 @@ static void Neg(Stack *s) {
   }
 }
 
-static void Sub(Stack *s) {
-  if (CanPerformOp(SUB, s)) {
+static void Sub(Stack *s, Command command) {
+  if (CanPerformOp(s, command)) {
     Poly p = StackPop(s), q = StackPop(s);
     Poly pq = PolySub(&p, &q);
     StackPush(s, PolySimplifyRec(&pq));
@@ -136,55 +132,55 @@ static void Sub(Stack *s) {
   }
 }
 
-static void IsEq(Stack *s) {
-  if (CanPerformOp(IS_EQ, s))
+static void IsEq(Stack *s, Command command) {
+  if (CanPerformOp(s, command))
     printf("%d\n", PolyIsEq(StackPeekFirst(s), StackPeekSecond(s)) ? 1 : 0);
 }
 
-static void Deg(Stack *s) {
-  if (CanPerformOp(DEG, s))
+static void Deg(Stack *s, Command command) {
+  if (CanPerformOp(s, command))
     printf("%d\n", PolyDeg(StackPeekFirst(s)));
 }
 
-static void DegBy(Stack *s, deg_by_arg_t var) {
-  if (CanPerformOp(DEG_BY, s))
-    printf("%d\n", PolyDegBy(StackPeekFirst(s), var));
+static void DegBy(Stack *s, Command command) {
+  if (CanPerformOp(s, command))
+    printf("%d\n", PolyDegBy(StackPeekFirst(s), command.deg_by_arg));
 }
 
-static void At(Stack *s, at_arg_t x) {
-  if (CanPerformOp(AT, s)) {
+static void At(Stack *s, Command command) {
+  if (CanPerformOp(s, command)) {
     Poly p = StackPop(s);
-    Poly q = PolyAt(&p, x);
+    Poly q = PolyAt(&p, command.at_arg);
     StackPush(s, PolySimplifyRec(&q));
     PolyDestroy(&p);
   }
 }
 
-static void Print(Stack *s) {
-  if (CanPerformOp(PRINT, s)) {
+static void Print(Stack *s, Command command) {
+  if (CanPerformOp(s, command)) {
     PolyPrint(StackPeekFirst(s));
     printf("\n");
   }
 }
 
-static void Pop(Stack *s) {
-  if (CanPerformOp(POP, s)) {
+static void Pop(Stack *s, Command command) {
+  if (CanPerformOp(s, command)) {
     Poly p = StackPop(s);
     PolyDestroy(&p);
   }
 }
 
-static void Compose(Stack *s, compose_arg_t arg) {
-  if (CanPerformCompose(arg, s)) {
+static void Compose(Stack *s, Command command) {
+  if (CanPerformOp(s, command)) {
     Poly p = StackPop(s);
-    Poly q[arg];
-    for (compose_arg_t i = arg; i > 0; i--)
+    Poly q[command.compose_arg];
+    for (compose_arg_t i = command.compose_arg; i > 0; i--)
       q[i - 1] = StackPop(s);
-    Poly composed = PolyCompose(&p, arg, q);
+    Poly composed = PolyCompose(&p, command.compose_arg, q);
     StackPush(s, PolySimplify(&composed));
     PolyDestroy(&p);
-    for (size_t i = 0; i < arg; i++)
-      PolyDestroy(&q[i]);
+    for (size_t i = 0; i < command.compose_arg; i++)
+      PolyDestroy(q + i);
   }
 }
 
@@ -194,46 +190,46 @@ static void PerformCommand(Stack *s, Command command) {
       Zero(s);
       break;
     case IS_COEFF:
-      IsCoeff(s);
+      IsCoeff(s, command);
       break;
     case IS_ZERO:
-      IsZero(s);
+      IsZero(s, command);
       break;
     case CLONE:
-      Clone(s);
+      Clone(s, command);
       break;
     case ADD:
-      Add(s);
+      Add(s, command);
       break;
     case MUL:
-      Mul(s);
+      Mul(s, command);
       break;
     case NEG:
-      Neg(s);
+      Neg(s, command);
       break;
     case SUB:
-      Sub(s);
+      Sub(s, command);
       break;
     case IS_EQ:
-      IsEq(s);
+      IsEq(s, command);
       break;
     case DEG:
-      Deg(s);
+      Deg(s, command);
       break;
     case DEG_BY:
-      DegBy(s, command.deg_by_arg);
+      DegBy(s, command);
       break;
     case AT:
-      At(s, command.at_arg);
+      At(s, command);
       break;
     case COMPOSE:
-      Compose(s, command.compose_arg);
+      Compose(s, command);
       break;
     case PRINT:
-      Print(s);
+      Print(s, command);
       break;
     case POP:
-      Pop(s);
+      Pop(s, command);
       break;
     default:
       break;
