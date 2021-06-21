@@ -19,6 +19,14 @@ set(CMAKE_C_FLAGS "-std=c11 -Wall -Wextra")
 # set(CMAKE_C_FLAGS_RELEASE "-O3 -DNDEBUG")
 # set(CMAKE_C_FLAGS_DEBUG "-g")
 
+# Wskazujemy pliki źródłowe wariantu projektu do testów biblioteki.
+set(TEST_SOURCE_FILES
+    src/poly.c src/poly.h src/poly_test.c)
+
+# Wskazujemy plik wykonywalny testów biblioteki.
+add_executable(test EXCLUDE_FROM_ALL ${TEST_SOURCE_FILES})
+set_target_properties(test PROPERTIES OUTPUT_NAME poly_test)
+
 # Wskazujemy pliki źródłowe.
 set(SOURCE_FILES
     src/poly.c src/poly.h src/parser.c src/parser.h src/stack.c src/stack.h src/calc.c src/calc.h)
