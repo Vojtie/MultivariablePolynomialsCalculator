@@ -228,16 +228,16 @@ static Command ReadCommand(Line *line) {
     else
       line->error_type = WR_COMMAND;
   }
-  else if (line->last_index >= 7 && oper[0] == 'D' && oper[1] == 'E' && oper[2] == 'G' && oper[3] == '_' && oper[4] == 'B' && oper[5] == 'Y' && oper[6] == ' ') {
-    if (line->last_index >= 8 && AreDigits(oper + 7, line->last_index - 7)) {
+  else if (line->last_index >= 6 && oper[0] == 'D' && oper[1] == 'E' && oper[2] == 'G' && oper[3] == '_' && oper[4] == 'B' && oper[5] == 'Y') {
+    if (line->last_index >= 8 && oper[6] == ' ' && AreDigits(oper + 7, line->last_index - 7)) {
       res.op = DEG_BY;
       res.deg_by_arg = ReadDegByArg(line, 7);
     }
     else
       line->error_type = WR_DEG_BY_VAR;
   }
-  else if (line->last_index >= 3 && oper[0] == 'A' && oper[1] == 'T' && oper[2] == ' ') {
-    if (line->last_index >= 4 && ((oper[3] == '-' && AreDigits(oper + 4, line->last_index - 4)) || AreDigits(oper + 3, line->last_index - 3))) {
+  else if (line->last_index >= 2 && oper[0] == 'A' && oper[1] == 'T') {
+    if (line->last_index >= 4 && oper[2] == ' ' && ((oper[3] == '-' && AreDigits(oper + 4, line->last_index - 4)) || AreDigits(oper + 3, line->last_index - 3))) {
       res.op = AT;
       res.at_arg = ReadAtArg(line, 3);
     } else
@@ -248,8 +248,8 @@ static Command ReadCommand(Line *line) {
   else if (line->last_index == 5 && oper[0] == 'C' && oper[1] == 'L' && oper[2] == 'O' && oper[3] == 'N' && oper[4] == 'E')
     res.op = CLONE;
   // zakladam ze brak spacji po compose to 'nie podano argumentu'
-  else if (line->last_index >= 8 && oper[0] == 'C' && oper[1] == 'O' && oper[2] == 'M' && oper[3] == 'P' && oper[4] == 'O' && oper[5] == 'S' && oper[6] == 'E' && oper[7] == ' ') {
-    if (line->last_index >= 9 && AreDigits(oper + 8, line->last_index - 8)) {
+  else if (line->last_index >= 7 && oper[0] == 'C' && oper[1] == 'O' && oper[2] == 'M' && oper[3] == 'P' && oper[4] == 'O' && oper[5] == 'S' && oper[6] == 'E') {
+    if (line->last_index >= 9 && oper[7] == ' ' && AreDigits(oper + 8, line->last_index - 8)) {
       res.op = COMPOSE;
       res.compose_arg = ReadComposeArg(line, 8);
     } else

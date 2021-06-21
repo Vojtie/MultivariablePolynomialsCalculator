@@ -574,6 +574,34 @@ static poly_coeff_t ExpBySquaring(poly_coeff_t x, poly_exp_t n) {
   return res;
 }
 
+Poly PolyRaiseToPower(const Poly *p, poly_exp_t exp) {
+  assert(exp >= 0);
+  Poly res;
+  if (exp == 0)
+    res = PolyFromCoeff(1);
+  else if (p == NULL)
+    res = PolyZero();
+  else if (exp == 1)
+    res = PolyClone(p);
+  else {
+    res = PolyFromCoeff(1);
+    Poly p_clone = PolyClone(p);
+    while (exp > 0) {
+      if (exp & 1) {
+        Poly temp = res;
+        res = PolyMul(&res, &p_clone);
+        PolyDestroy(&temp);
+      }
+      Poly temp = p_clone;
+      p_clone = PolyMul(&p_clone, &p_clone);
+      PolyDestroy(&temp);
+      exp /= 2;
+    }
+    PolyDestroy(&p_clone);
+  }
+  return res;
+}
+
 Poly PolyAt(const Poly *p, poly_coeff_t x) {
   assert(p);
   Poly res;
@@ -667,7 +695,7 @@ Poly PolyAddPolys(size_t count, Poly polys[]) {
   return res;
 }
 
-Poly PolyRaiseToPower(const Poly *p, poly_exp_t exp) {
+Poly PolyRaiseToPowerOld(const Poly *p, poly_exp_t exp) {
   assert(exp >= 0);
   Poly res;
   if (exp == 0)
@@ -689,15 +717,11 @@ Poly PolyRaiseToPower(const Poly *p, poly_exp_t exp) {
 
 Poly PolyCompose(const Poly *p, size_t k, const Poly q[]) {
   assert(p);
-  assert(k >= 0);
   Poly composed;
   size_t p_size = PolyGetSize(p);
-  if (PolyIsCoeff(p)) {
+  if (PolyIsCoeff(p))
     composed = PolyFromCoeff(PolyGetCoeff(p));
-    // co jesli mamy k = 0 i x_i^0
-  } /* else if (k == 0) {
-    composed = PolyZero();
-  } */ else {
+  else {
     Poly polys[p_size];
     for (size_t i = 0; i < p_size; i++) {
       Poly temp1;
@@ -709,10 +733,6 @@ Poly PolyCompose(const Poly *p, size_t k, const Poly q[]) {
         polys[i] = temp1;
       else {
         Poly temp2 = PolyRaiseToPower(k == 0 ? NULL : q, MonoGetExp(p->arr + i));
-        /**
-        Mono monos[] = {(Mono) {.exp = 0, .p = temp1} };
-        Poly temp3 = PolyFromMonos(monos, 1);
-         */
         polys[i] = PolyMul(&temp1, &temp2);
         PolyDestroy(&temp1);
         PolyDestroy(&temp2);
