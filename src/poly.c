@@ -6,10 +6,6 @@
  * @date 2021
  */
 
-
-#ifndef POLYNOMIALS_POLY_C
-#define POLYNOMIALS_POLY_C
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -683,5 +679,3 @@ Poly PolyCompose(const Poly *p, size_t k, const Poly q[]) {
   }
   return composed;
 }
-
-#endif //POLYNOMIALS_POLY_C

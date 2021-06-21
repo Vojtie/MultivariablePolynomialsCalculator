@@ -6,9 +6,6 @@
  * @date 2021
 */
 
-#ifndef POLYNOMIALS_STACK_C
-#define POLYNOMIALS_STACK_C
-
 #include <stdlib.h>
 #include <stdbool.h>
 #include "stack.h"
@@ -101,5 +98,3 @@ void StackFree(Stack *s) {
   free(s->polys);
   free(s);
 }
-
-#endif //POLYNOMIALS_STACK_C

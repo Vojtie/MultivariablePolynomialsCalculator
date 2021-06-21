@@ -13,9 +13,7 @@
 #include <limits.h>
 #include <errno.h>
 #include <stdlib.h>
-#include <string.h>
 #include "parser.h"
-#include "poly.h"
 
 /** To jest stała oznaczająca domyślny rozmiar linii */
 #define DEF_ALLOC_SIZE 32
@@ -142,7 +140,7 @@ static bool IsNumber(char ch) {
  * argument polecenia DegBy.
  * @param line : wiersz
  * @param arg_i : położenie argumentu w wierszu
- * @return argument polecenia DegBy
+ * @return argument polecenia DEG_BY
  */
 static deg_by_arg_t ReadDegByArg(Line *line, size_t arg_i) {
   deg_by_arg_t res;
@@ -159,7 +157,7 @@ static deg_by_arg_t ReadDegByArg(Line *line, size_t arg_i) {
  * argument polecenia At.
  * @param line : wiersz
  * @param arg_i : położenie argumentu w wierszu
- * @return argument polecenia At
+ * @return argument polecenia AT
  */
 static at_arg_t ReadAtArg(Line *line, size_t arg_i) {
   at_arg_t res;
@@ -172,10 +170,11 @@ static at_arg_t ReadAtArg(Line *line, size_t arg_i) {
 }
 
 /**
- *
- * @param line
- * @param arg_i
- * @return
+ * Wczytuje z wiersza
+ * argument polecenia COMPOSE.
+ * @param line : wiersz
+ * @param arg_i : położenie argumentu w wierszu
+ * @return argument polecenia COMPOSE
  */
 static deg_by_arg_t ReadComposeArg(Line *line, size_t arg_i) {
   compose_arg_t res;
