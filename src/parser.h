@@ -33,10 +33,14 @@ typedef long at_arg_t;
  * To jest struktura przechowująca polecenie wraz z jego potencjalnym argumentem.
  */
 typedef struct Command {
+    /** To jest obiekt przechowujący polecenie */
     Operator op;
     union {
+        /** To jest zmienna przechowująca argument polecenia AT */
         at_arg_t at_arg;
+        /** To jest zmienna przechowująca argument polecenia DEG_BY */
         deg_by_arg_t deg_by_arg;
+        /** To jest zmienna przechowująca argument polecenia COMPOSE */
         compose_arg_t compose_arg;
     };
 } Command;
@@ -59,14 +63,23 @@ typedef enum LineType {
  * To jest struktura przechowująca wiersz.:
  */
 typedef struct Line {
+    /** To jest tablica przechowująca wiersz */
     char *chars;
+    /** To jest zmienna typu logicznego przechowująca informację czy wczytany wiersz jest ostatni w pliku */
     bool is_eof;
+    /** To jest obiekt przechowujący typ błędu */
     Error error_type;
+    /** To jest zmienna przechowująca rozmiar wiersza */
     size_t size;
+    /** To jest zmienna przechowująca numer ostatniego indeksu wiersza */
     size_t last_index;
+    /** To jest obiekt przechowujący typ wiersza */
     LineType type;
+    /** To jest unia przechowująca wielomian lub polecenie */
     union {
+        /** To jest wielomian */
         Poly p;
+        /** To jest polecenie */
         Command c;
     };
 } Line;

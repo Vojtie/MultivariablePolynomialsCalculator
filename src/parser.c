@@ -17,8 +17,10 @@
 #include "parser.h"
 #include "poly.h"
 
-
+/** To jest stała oznaczająca domyślny rozmiar linii */
 #define DEF_ALLOC_SIZE 32
+
+/** To jest stała przechowująca domyślny współczynnik zwiększania rozmiaru alokowanej pamięci */
 #define DEF_ALLOC_COEFF 2
 
 /**
