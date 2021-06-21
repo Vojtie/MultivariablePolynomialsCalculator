@@ -668,13 +668,15 @@ Poly PolyAddPolys(size_t count, Poly polys[]) {
 }
 
 Poly PolyRaiseToPower(const Poly *p, poly_exp_t exp) {
-  assert(p && exp >= 0);
+  assert(exp >= 0);
   Poly res;
-  if (exp == 0) {
+  if (exp == 0)
     res = PolyFromCoeff(1);
-  } else if (exp == 1) {
+  else if (p == NULL)
+    res = PolyZero();
+  else if (exp == 1)
     res = PolyClone(p);
-  } else {
+  else {
     res = PolyMul(p, p);
     for (size_t i = 2; i < (size_t) exp; i++) {
       Poly temp = res;
@@ -686,23 +688,27 @@ Poly PolyRaiseToPower(const Poly *p, poly_exp_t exp) {
 }
 
 Poly PolyCompose(const Poly *p, size_t k, const Poly q[]) {
-  assert(p && q);
+  assert(p);
   assert(k >= 0);
   Poly composed;
   size_t p_size = PolyGetSize(p);
   if (PolyIsCoeff(p)) {
     composed = PolyFromCoeff(PolyGetCoeff(p));
     // co jesli mamy k = 0 i x_i^0
-  } else if (k == 0) {
+  } /* else if (k == 0) {
     composed = PolyZero();
-  } else {
+  } */ else {
     Poly polys[p_size];
     for (size_t i = 0; i < p_size; i++) {
-      Poly temp1 = PolyCompose(&p->arr[i].p, k - 1, q + 1);
+      Poly temp1;
+      if (k == 0)
+        temp1 = PolyCompose(&p->arr[i].p, k, NULL);
+      else
+        temp1 = PolyCompose(&p->arr[i].p, k - 1, q + 1);
       if (PolyIsZero(&temp1))
         polys[i] = temp1;
       else {
-        Poly temp2 = PolyRaiseToPower(q, MonoGetExp(p->arr + i));
+        Poly temp2 = PolyRaiseToPower(k == 0 ? NULL : q, MonoGetExp(p->arr + i));
         /**
         Mono monos[] = {(Mono) {.exp = 0, .p = temp1} };
         Poly temp3 = PolyFromMonos(monos, 1);
